@@ -98,7 +98,7 @@ class RofiMenu:
 
 		settings = [
 			'rofi', '-dmenu', '-i', '-location', '2', '-width', '100',
-			'-hide-scrollbar', '-lines', '12', '-color-enabled', '-bw', '0',
+			'-hide-scrollbar', '-lines', '6', '-color-enabled', '-bw', '0',
 			'-p', self.prompt, '-font', font_name,
 			'-color-window', theme_colors['window'],
 			'-color-normal', theme_colors['normal'],
