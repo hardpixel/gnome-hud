@@ -1,5 +1,4 @@
-import time
-
+from array import array
 from Xlib import display, X, protocol
 
 
@@ -121,9 +120,7 @@ class ActiveWindow:
 		return object_path.decode('utf-8')
 
 	def close(self):
-		data = [int(time.mktime(time.localtime())), 1]
-
-		self.ewmh.set_property('_NET_CLOSE_WINDOW', data, self.window)
+		self.ewmh.set_property('_NET_CLOSE_WINDOW', [X.CurrentTime, 1], self.window)
 		self.ewmh.display.flush()
 
 	def destroy(self):
