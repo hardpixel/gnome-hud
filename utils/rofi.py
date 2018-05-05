@@ -1,6 +1,6 @@
+import re
 import gi
 import subprocess
-import inflection
 
 gi.require_version('Gtk', '3.0')
 
@@ -37,9 +37,9 @@ class RofiMenu:
     if len(prompt) < 2:
       prompt = ''
     else:
-      prompt = prompt
+      prompt = re.sub(r'_|-', ' ', prompt).strip()
 
-    return inflection.titleize(prompt)
+    return prompt.title()
 
   def gtk_theme_colors(self):
     window = Gtk.Window()

@@ -1,5 +1,5 @@
+import re
 import dbus
-import inflection
 
 class DbusMenu:
 
@@ -90,6 +90,6 @@ class DbusMenu:
       result = result + separator + label
 
     result = result.replace('Root >', '')
-    result = result.replace('_', '').strip()
+    result = re.sub(r'_|-', ' ', result).strip()
 
-    return inflection.titleize(result)
+    return result.title()
