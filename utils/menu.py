@@ -37,6 +37,12 @@ class DbusMenu:
 
       win_iface.Activate(action.replace('win.', ''), [], dict())
 
+    elif 'unity.' in action:
+      mnb_object = self.session.get_object(self.window.bus_name, self.window.menubar_path)
+      mnb_iface = dbus.Interface(mnb_object, dbus_interface='org.gtk.Actions')
+
+      mnb_iface.Activate(action.replace('unity.', ''), [], dict())
+
   def explore_menu_paths(self):
     paths = [self.window.appmenu_path, self.window.menubar_path]
 
