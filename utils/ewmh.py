@@ -1,6 +1,4 @@
-from array import array
 from Xlib import display, X, protocol
-
 
 class EWMH:
 
