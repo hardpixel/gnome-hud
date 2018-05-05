@@ -1,4 +1,3 @@
-import re
 import gi
 import subprocess
 
@@ -37,7 +36,7 @@ class RofiMenu:
     if len(prompt) < 2:
       prompt = ''
     else:
-      prompt = re.sub(r'_|-', ' ', prompt).strip()
+      prompt = prompt.replace('-', ' ').strip()
 
     return prompt.title()
 

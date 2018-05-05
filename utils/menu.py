@@ -1,4 +1,3 @@
-import re
 import dbus
 
 class DbusMenu:
@@ -90,6 +89,6 @@ class DbusMenu:
       result = result + separator + label
 
     result = result.replace('Root >', '')
-    result = re.sub(r'_|-', ' ', result).strip()
+    result = result.replace('_', '')
 
-    return result.title()
+    return result.strip()
