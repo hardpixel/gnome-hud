@@ -11,24 +11,23 @@ from utils.ewmh import ActiveWindow
 from utils.rofi import RofiMenu
 from utils.menu import DbusMenu
 
-
 def hud(_keystr):
-	try:
-		window = ActiveWindow()
-		dbus_menu = DbusMenu(window)
-		rofi_menu = RofiMenu(dbus_menu.available_menu_items(), window.name)
+  try:
+    window = ActiveWindow()
+    dbus_menu = DbusMenu(window)
+    rofi_menu = RofiMenu(dbus_menu.available_menu_items(), window.name)
 
-		dbus_menu.activate_menu_item(rofi_menu.get_selection())
-	except AttributeError:
-		return False
+    dbus_menu.activate_menu_item(rofi_menu.get_selection())
+  except AttributeError:
+    return False
 
 
 if __name__ == "__main__":
-	DBusGMainLoop(set_as_default=True)
-	Keybinder.init()
-	Keybinder.bind('<Ctrl><Alt>space', hud)
+  DBusGMainLoop(set_as_default=True)
+  Keybinder.init()
+  Keybinder.bind('<Ctrl><Alt>space', hud)
 
-	try:
-		GLib.MainLoop().run()
-	except KeyboardInterrupt:
-		GLib.MainLoop().quit()
+  try:
+    GLib.MainLoop().run()
+  except KeyboardInterrupt:
+    GLib.MainLoop().quit()
