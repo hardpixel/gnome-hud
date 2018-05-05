@@ -38,7 +38,7 @@ class RofiMenu:
 		if len(prompt) < 2:
 			prompt = ''
 		else:
-			prompt = prompt + ':'
+			prompt = prompt
 
 		return inflection.titleize(prompt)
 
