@@ -3,15 +3,13 @@ import dbus
 
 gi.require_version('Bamf', '3')
 
-from gi.repository import Gdk, Bamf
+from gi.repository import Gdk, Gio, Bamf
 
 class DbusMenu:
 
   def __init__(self):
     self.session      = dbus.SessionBus()
     self.matcher      = Bamf.Matcher.get_default()
-    self.app          = self.matcher.get_active_application()
-    self.prompt       = self.app.get_name()
     self.window       = self.matcher.get_active_window()
     self.bus_name     = self.window.get_utf8_prop('_GTK_UNIQUE_BUS_NAME')
     self.app_path     = self.window.get_utf8_prop('_GTK_APPLICATION_OBJECT_PATH')
@@ -23,6 +21,15 @@ class DbusMenu:
 
     self.explore_paths()
     self.explore_items()
+
+  @property
+
+  def prompt(self):
+    application  = self.matcher.get_active_application()
+    desktop_file = application.get_desktop_file()
+    deskapp_info = Gio.DesktopAppInfo.new_from_filename(desktop_file)
+
+    return deskapp_info.get_string('Name')
 
   @property
 
