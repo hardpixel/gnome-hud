@@ -11,10 +11,10 @@ class DbusMenu:
     self.explore_menu_paths()
     self.explore_menu_items()
 
-  def available_menu_items(self):
-    items = sorted(self.menu_actions.keys())
+  @property
 
-    return items
+  def actions(self):
+    return self.menu_actions.keys()
 
   def activate_menu_item(self, selection):
     if not selection:

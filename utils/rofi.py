@@ -12,6 +12,14 @@ class RofiMenu:
     self.prompt = self.parse_prompt(prompt)
     self.menu = self.open_menu()
 
+  @property
+
+  def selection(self):
+    selection = self.menu.communicate()[0].decode('utf8').rstrip()
+    self.menu.stdin.close()
+
+    return selection
+
   def rgba_to_hex(self, color):
     red = int(color.red * 255)
     green = int(color.green * 255)
@@ -107,9 +115,3 @@ class RofiMenu:
     menu.stdin.write(self.menu_items)
 
     return menu
-
-  def get_selection(self):
-    selection = self.menu.communicate()[0].decode('utf8').rstrip()
-    self.menu.stdin.close()
-
-    return selection

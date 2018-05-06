@@ -55,15 +55,10 @@ class ActiveWindow:
   def __init__(self):
     self.ewmh = EWMH()
     self.window = self.ewmh.get_active_window()
-    self.pid = self.get_window_pid()
-    self.name = self.get_window_name()
-    self.bus_name = self.get_window_bus_name()
-    self.app_path = self.get_application_object_path()
-    self.win_path = self.get_window_object_path()
-    self.menubar_path = self.get_menubar_object_path()
-    self.appmenu_path = self.get_appmenu_object_path()
 
-  def get_window_pid(self):
+  @property
+
+  def pid(self):
     window_pid = self.ewmh.get_property('_NET_WM_PID', self.window)
 
     if not window_pid:
@@ -71,13 +66,17 @@ class ActiveWindow:
 
     return window_pid[0]
 
-  def get_window_name(self):
+  @property
+
+  def name(self):
     name = self.window.get_wm_class()
     name = list(name)[-1]
 
     return name
 
-  def get_window_bus_name(self):
+  @property
+
+  def bus_name(self):
     bus_name = self.ewmh.get_property('_GTK_UNIQUE_BUS_NAME', self.window)
 
     if not bus_name:
@@ -85,7 +84,9 @@ class ActiveWindow:
 
     return bus_name.decode('utf-8')
 
-  def get_application_object_path(self):
+  @property
+
+  def app_path(self):
     object_path = self.ewmh.get_property('_GTK_APPLICATION_OBJECT_PATH', self.window)
 
     if not object_path:
@@ -93,7 +94,9 @@ class ActiveWindow:
 
     return object_path.decode('utf-8')
 
-  def get_window_object_path(self):
+  @property
+
+  def win_path(self):
     object_path = self.ewmh.get_property('_GTK_WINDOW_OBJECT_PATH', self.window)
 
     if not object_path:
@@ -101,7 +104,9 @@ class ActiveWindow:
 
     return object_path.decode('utf-8')
 
-  def get_menubar_object_path(self):
+  @property
+
+  def menubar_path(self):
     object_path = self.ewmh.get_property('_GTK_MENUBAR_OBJECT_PATH', self.window)
 
     if not object_path:
@@ -109,7 +114,9 @@ class ActiveWindow:
 
     return object_path.decode('utf-8')
 
-  def get_appmenu_object_path(self):
+  @property
+
+  def appmenu_path(self):
     object_path = self.ewmh.get_property('_GTK_APP_MENU_OBJECT_PATH', self.window)
 
     if not object_path:
