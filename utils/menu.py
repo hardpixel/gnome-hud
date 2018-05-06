@@ -8,18 +8,19 @@ class DbusMenu:
     self.menu_items = dict()
     self.menu_actions = dict()
 
-    self.explore_menu_paths()
-    self.explore_menu_items()
+    self.explore_paths()
+    self.explore_items()
 
   @property
 
   def actions(self):
     return self.menu_actions.keys()
 
-  def activate_menu_item(self, selection):
-    if not selection:
-      return
+  def activate(self, selection):
+    if selection:
+      self.activate_item(selection)
 
+  def activate_item(self, selection):
     action = self.menu_actions.get(selection, 'sys.quit')
 
     if 'sys.' in action:
@@ -43,24 +44,18 @@ class DbusMenu:
 
       mnb_iface.Activate(action.replace('unity.', ''), [], dict())
 
-  def explore_menu_paths(self):
+  def explore_paths(self):
     paths = [self.window.appmenu_path, self.window.menubar_path]
 
-    for path in paths:
-      self.explore_menu_path(path)
+    for path in filter(None, paths):
+      pobject = self.session.get_object(self.window.bus_name, path)
+      interface = dbus.Interface(pobject, dbus_interface='org.gtk.Menus')
+      results = interface.Start([x for x in range(1024)])
 
-  def explore_menu_path(self, path):
-    if not path:
-      return
+      for result in results:
+        self.menu_items[(result[0], result[1])] = result[2]
 
-    pobject = self.session.get_object(self.window.bus_name, path)
-    interface = dbus.Interface(pobject, dbus_interface='org.gtk.Menus')
-    results = interface.Start([x for x in range(1024)])
-
-    for result in results:
-      self.menu_items[(result[0], result[1])] = result[2]
-
-  def explore_menu_items(self, menu_id=None, labels=None):
+  def explore_items(self, menu_id=None, labels=None):
     menu_id = menu_id or (0, 0)
     labels = labels or list()
 
@@ -79,12 +74,12 @@ class DbusMenu:
       if ':section' in menu:
         section = menu[':section']
         section_id = (section[0], section[1])
-        self.explore_menu_items(section_id, labels)
+        self.explore_items(section_id, labels)
 
       if ':submenu' in menu:
         submenu = menu[':submenu']
         submenu_id = (submenu[0], submenu[1])
-        self.explore_menu_items(submenu_id, new_labels)
+        self.explore_items(submenu_id, new_labels)
 
   def format_labels(self, labels):
     separator = u'\u0020\u0020\u00BB\u0020\u0020'

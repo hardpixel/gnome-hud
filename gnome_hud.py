@@ -17,7 +17,7 @@ def gnome_hud(_keystr):
     dbus_menu = DbusMenu(window)
     rofi_menu = RofiMenu(dbus_menu.actions, window.name)
 
-    dbus_menu.activate_menu_item(rofi_menu.selection)
+    dbus_menu.activate(rofi_menu.selection)
   except AttributeError:
     return False
 
