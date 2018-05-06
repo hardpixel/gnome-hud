@@ -7,15 +7,13 @@ gi.require_version('Keybinder', '3.0')
 from gi.repository import Keybinder, GLib
 from dbus.mainloop.glib import DBusGMainLoop
 
-from utils.ewmh import ActiveWindow
 from utils.rofi import RofiMenu
 from utils.menu import DbusMenu
 
 def gnome_hud(_keystr):
   try:
-    window = ActiveWindow()
-    dbus_menu = DbusMenu(window)
-    rofi_menu = RofiMenu(dbus_menu.actions, window.name)
+    dbus_menu = DbusMenu()
+    rofi_menu = RofiMenu(dbus_menu.actions, dbus_menu.prompt)
 
     dbus_menu.activate(rofi_menu.selection)
   except AttributeError:

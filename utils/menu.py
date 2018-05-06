@@ -1,11 +1,24 @@
+import gi
 import dbus
+
+gi.require_version('Bamf', '3')
+
+from gi.repository import Gdk, Bamf
 
 class DbusMenu:
 
-  def __init__(self, window):
-    self.window = window
-    self.session = dbus.SessionBus()
-    self.menu_items = dict()
+  def __init__(self):
+    self.session      = dbus.SessionBus()
+    self.matcher      = Bamf.Matcher.get_default()
+    self.app          = self.matcher.get_active_application()
+    self.prompt       = self.app.get_name()
+    self.window       = self.matcher.get_active_window()
+    self.bus_name     = self.window.get_utf8_prop('_GTK_UNIQUE_BUS_NAME')
+    self.app_path     = self.window.get_utf8_prop('_GTK_APPLICATION_OBJECT_PATH')
+    self.win_path     = self.window.get_utf8_prop('_GTK_WINDOW_OBJECT_PATH')
+    self.menubar_path = self.window.get_utf8_prop('_GTK_MENUBAR_OBJECT_PATH')
+    self.appmenu_path = self.window.get_utf8_prop('_GTK_APP_MENU_OBJECT_PATH')
+    self.menu_items   = dict()
     self.menu_actions = dict()
 
     self.explore_paths()
@@ -24,33 +37,35 @@ class DbusMenu:
     action = self.menu_actions.get(selection, 'sys.quit')
 
     if 'sys.' in action:
-      self.window.close()
+      screen = Gdk.Screen.get_default()
+      window = screen.get_active_window()
+      window.destroy()
 
     elif 'app.' in action:
-      app_object = self.session.get_object(self.window.bus_name, self.window.app_path)
-      app_iface = dbus.Interface(app_object, dbus_interface='org.gtk.Actions')
+      app_object = self.session.get_object(self.bus_name, self.app_path)
+      app_iface  = dbus.Interface(app_object, dbus_interface='org.gtk.Actions')
 
       app_iface.Activate(action.replace('app.', ''), [], dict())
 
     elif 'win.' in action:
-      win_object = self.session.get_object(self.window.bus_name, self.window.win_path)
-      win_iface = dbus.Interface(win_object, dbus_interface='org.gtk.Actions')
+      win_object = self.session.get_object(self.bus_name, self.win_path)
+      win_iface  = dbus.Interface(win_object, dbus_interface='org.gtk.Actions')
 
       win_iface.Activate(action.replace('win.', ''), [], dict())
 
     elif 'unity.' in action:
-      mnb_object = self.session.get_object(self.window.bus_name, self.window.menubar_path)
-      mnb_iface = dbus.Interface(mnb_object, dbus_interface='org.gtk.Actions')
+      mnb_object = self.session.get_object(self.bus_name, self.menubar_path)
+      mnb_iface  = dbus.Interface(mnb_object, dbus_interface='org.gtk.Actions')
 
       mnb_iface.Activate(action.replace('unity.', ''), [], dict())
 
   def explore_paths(self):
-    paths = [self.window.appmenu_path, self.window.menubar_path]
+    paths = [self.appmenu_path, self.menubar_path]
 
     for path in filter(None, paths):
-      pobject = self.session.get_object(self.window.bus_name, path)
+      pobject   = self.session.get_object(self.bus_name, path)
       interface = dbus.Interface(pobject, dbus_interface='org.gtk.Menus')
-      results = interface.Start([x for x in range(1024)])
+      results   = interface.Start([x for x in range(1024)])
 
       for result in results:
         self.menu_items[(result[0], result[1])] = result[2]

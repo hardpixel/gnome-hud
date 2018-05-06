@@ -39,14 +39,7 @@ class RofiMenu:
     return string.encode('utf-8')
 
   def parse_prompt(self, prompt):
-    prompt = prompt.split('.')[0]
-
-    if len(prompt) < 2:
-      prompt = ''
-    else:
-      prompt = prompt.replace('-', ' ').strip()
-
-    return prompt.title()
+    return prompt.strip()
 
   def gtk_theme_colors(self):
     gtk_window       = Gtk.Window()
