@@ -57,11 +57,11 @@ class DbusMenu:
 
   def explore_items(self, menu_id=None, labels=None):
     menu_id = menu_id or (0, 0)
-    labels = labels or list()
+    labels  = labels or list()
 
     for menu in self.menu_items.get(menu_id, list()):
       if 'label' in menu:
-        label = menu['label']
+        label      = menu['label']
         new_labels = labels + [label]
         form_label = self.format_labels(new_labels)
 
@@ -72,19 +72,21 @@ class DbusMenu:
             self.menu_actions[form_label] = menu_action
 
       if ':section' in menu:
-        section = menu[':section']
+        section    = menu[':section']
         section_id = (section[0], section[1])
+
         self.explore_items(section_id, labels)
 
       if ':submenu' in menu:
-        submenu = menu[':submenu']
+        submenu    = menu[':submenu']
         submenu_id = (submenu[0], submenu[1])
+
         self.explore_items(submenu_id, new_labels)
 
   def format_labels(self, labels):
-    separator = u'\u0020\u0020\u00BB\u0020\u0020'
+    separator   = u'\u0020\u0020\u00BB\u0020\u0020'
     head, *tail = labels
-    result = head
+    result      = head
 
     for label in tail:
       result = result + separator + label
