@@ -8,9 +8,9 @@ from gi.repository import Gtk
 class RofiMenu:
 
   def __init__(self, menu_keys, prompt):
-    self.menu_items = self.parse_items(menu_keys)
+    self.items  = self.parse_items(menu_keys)
     self.prompt = self.parse_prompt(prompt)
-    self.menu = self.open_menu()
+    self.menu   = self.open_menu()
 
   @property
 
@@ -21,9 +21,9 @@ class RofiMenu:
     return selection
 
   def rgba_to_hex(self, color):
-    red = int(color.red * 255)
+    red   = int(color.red * 255)
     green = int(color.green * 255)
-    blue = int(color.blue * 255)
+    blue  = int(color.blue * 255)
 
     return "#{0:02x}{1:02x}{2:02x}".format(red, green, blue)
 
@@ -49,16 +49,16 @@ class RofiMenu:
     return prompt.title()
 
   def gtk_theme_colors(self):
-    window = Gtk.Window()
-    style_context = window.get_style_context()
+    gtk_window       = Gtk.Window()
+    style_context    = gtk_window.get_style_context()
     gtk_theme_colors = {
-      'bg': style_context.lookup_color('theme_bg_color')[1],
-      'fg': style_context.lookup_color('theme_fg_color')[1],
-      'selected_bg': style_context.lookup_color('theme_selected_bg_color')[1],
-      'selected_fg': style_context.lookup_color('theme_selected_fg_color')[1],
-      'error_bg': style_context.lookup_color('error_bg_color')[1],
-      'error_fg': style_context.lookup_color('error_fg_color')[1],
-      'info_bg': style_context.lookup_color('info_bg_color')[1],
+      'bg':           style_context.lookup_color('theme_bg_color')[1],
+      'fg':           style_context.lookup_color('theme_fg_color')[1],
+      'selected_bg':  style_context.lookup_color('theme_selected_bg_color')[1],
+      'selected_fg':  style_context.lookup_color('theme_selected_fg_color')[1],
+      'error_bg':     style_context.lookup_color('error_bg_color')[1],
+      'error_fg':     style_context.lookup_color('error_fg_color')[1],
+      'info_bg':      style_context.lookup_color('info_bg_color')[1],
       'unfocused_fg': style_context.lookup_color('theme_unfocused_fg_color')[1],
       'unfocused_bg': style_context.lookup_color('theme_unfocused_bg_color')[1]
     }
@@ -69,7 +69,7 @@ class RofiMenu:
     return gtk_theme_colors
 
   def theme_colors(self):
-    gtk_colors = self.gtk_theme_colors()
+    gtk_colors   = self.gtk_theme_colors()
     theme_colors = {
       'window': [
         gtk_colors['bg'],
@@ -98,20 +98,28 @@ class RofiMenu:
     return theme_colors
 
   def open_menu(self):
-    settings = Gtk.Settings.get_default()
-    font_name = settings.get_property('gtk-font-name')
+    settings     = Gtk.Settings.get_default()
+    font_name    = settings.get_property('gtk-font-name')
     theme_colors = self.theme_colors()
 
     settings = [
-      'rofi', '-dmenu', '-i', '-location', '2', '-width', '100',
-      '-hide-scrollbar', '-lines', '6', '-color-enabled', '-bw', '0',
-      '-p', self.prompt, '-font', font_name,
+      'rofi',
+      '-i',
+      '-dmenu',
+      '-hide-scrollbar',
+      '-color-enabled',
+      '-lines', '6',
+      '-location', '2',
+      '-width', '100',
+      '-bw', '0',
+      '-p', self.prompt,
+      '-font', font_name,
       '-color-window', theme_colors['window'],
       '-color-normal', theme_colors['normal'],
       '-color-urgent', theme_colors['urgent']
     ]
 
     menu = subprocess.Popen(settings, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
-    menu.stdin.write(self.menu_items)
+    menu.stdin.write(self.items)
 
     return menu
