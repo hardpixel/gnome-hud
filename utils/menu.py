@@ -106,7 +106,7 @@ class DbusMenu:
       new_labels = labels
 
     if len(item_children) == 0:
-      if len(new_labels) > 2:
+      if 'label' in item_props:
         form_label = self.format_labels(new_labels)
         self.menu_actions[form_label] = item_id
     else:
