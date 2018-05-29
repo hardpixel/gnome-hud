@@ -11,6 +11,7 @@ class DbusMenu:
     self.session      = dbus.SessionBus()
     self.matcher      = Bamf.Matcher.get_default()
     self.window       = self.matcher.get_active_window()
+    self.xid          = self.window.get_xid()
     self.bus_name     = self.window.get_utf8_prop('_GTK_UNIQUE_BUS_NAME')
     self.app_path     = self.window.get_utf8_prop('_GTK_APPLICATION_OBJECT_PATH')
     self.win_path     = self.window.get_utf8_prop('_GTK_WINDOW_OBJECT_PATH')
@@ -19,8 +20,8 @@ class DbusMenu:
     self.menu_items   = dict()
     self.menu_actions = dict()
 
-    self.explore_paths()
-    self.explore_items()
+    self.explore_dbusmenu()
+    self.explore_gtkmenu()
 
   @property
 
@@ -41,21 +42,31 @@ class DbusMenu:
       self.activate_item(selection)
 
   def activate_item(self, selection):
+    if self.dbusmenu:
+      self.activate_dbusmenu_item(selection)
+    else:
+      self.activate_gtkmenu_item(selection)
+
+  def activate_dbusmenu_item(self, selection):
+    action = self.menu_actions[selection]
+    self.dbusmenu.Event(action, 'clicked', 0, 0)
+
+  def activate_gtkmenu_item(self, selection):
     action = self.menu_actions.get(selection, 'sys.quit')
 
     if 'sys.' in action:
       self.close_window()
 
     elif 'app.' in action:
-      self.activate_action(action, 'app.', self.app_path)
+      self.activate_gtkmenu_action(action, 'app.', self.app_path)
 
     elif 'win.' in action:
-      self.activate_action(action, 'win.', self.win_path)
+      self.activate_gtkmenu_action(action, 'win.', self.win_path)
 
     elif 'unity.' in action:
-      self.activate_action(action, 'unity.', self.menubar_path)
+      self.activate_gtkmenu_action(action, 'unity.', self.menubar_path)
 
-  def activate_action(self, action, prefix, path):
+  def activate_gtkmenu_action(self, action, prefix, path):
     object = self.session.get_object(self.bus_name, path)
     iface  = dbus.Interface(object, dbus_interface='org.gtk.Actions')
 
@@ -67,7 +78,42 @@ class DbusMenu:
 
     window.destroy()
 
-  def explore_paths(self):
+  def explore_dbusmenu(self):
+    name = 'com.canonical.AppMenu.Registrar'
+    path = '/com/canonical/AppMenu/Registrar'
+
+    try:
+      object     = self.session.get_object(name, path)
+      interface  = dbus.Interface(object, name)
+      name, path = interface.GetMenuForWindow(self.xid)
+      pobject    = self.session.get_object(name, path)
+      interface  = dbus.Interface(pobject, 'com.canonical.dbusmenu')
+      results    = interface.GetLayout(0, -1, ['label'])
+
+      self.explore_dbusmenu_items(results[1], [])
+      self.dbusmenu = interface
+    except dbus.exceptions.DBusException:
+      self.dbusmenu = None
+
+  def explore_dbusmenu_items(self, item=None, labels=None):
+    item_id       = item[0]
+    item_props    = item[1]
+    item_children = item[2]
+
+    if 'label' in item_props:
+      new_labels = labels + [item_props['label']]
+    else:
+      new_labels = labels
+
+    if len(item_children) == 0:
+      if len(new_labels) > 2:
+        form_label = self.format_labels(new_labels)
+        self.menu_actions[form_label] = item_id
+    else:
+      for child in item_children:
+        self.explore_dbusmenu_items(child, new_labels)
+
+  def explore_gtkmenu(self):
     paths = [self.appmenu_path, self.menubar_path]
 
     for path in filter(None, paths):
@@ -78,7 +124,9 @@ class DbusMenu:
       for result in results:
         self.menu_items[(result[0], result[1])] = result[2]
 
-  def explore_items(self, menu_id=None, labels=None):
+    self.explore_gtkmenu_items()
+
+  def explore_gtkmenu_items(self, menu_id=None, labels=None):
     menu_id = menu_id or (0, 0)
     labels  = labels or list()
 
@@ -95,14 +143,14 @@ class DbusMenu:
             self.menu_actions[form_label] = menu_action
 
       if ':section' in menu:
-        self.explore_subitems(menu[':section'], labels)
+        self.explore_gtkmenu_subitems(menu[':section'], labels)
 
       if ':submenu' in menu:
-        self.explore_subitems(menu[':submenu'], new_labels)
+        self.explore_gtkmenu_subitems(menu[':submenu'], new_labels)
 
-  def explore_subitems(self, items, labels):
+  def explore_gtkmenu_subitems(self, items, labels):
     menu_id = (items[0], items[1])
-    self.explore_items(menu_id, labels)
+    self.explore_gtkmenu_items(menu_id, labels)
 
   def format_labels(self, labels):
     separator   = u'\u0020\u0020\u00BB\u0020\u0020'
@@ -112,7 +160,7 @@ class DbusMenu:
     for label in tail:
       result = result + separator + label
 
-    result = result.replace('Root >', '')
+    result = result.replace('Root%s' % separator, '')
     result = result.replace('_', '')
 
     return result.strip()
