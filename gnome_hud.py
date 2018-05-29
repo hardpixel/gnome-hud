@@ -1,32 +1,18 @@
 #! /usr/bin/python3
 
-import gi
+import os
+import threading
 
-gi.require_version('Keybinder', '3.0')
+def relative_path(filepath):
+  root = os.path.dirname(os.path.realpath(__file__))
+  return os.path.join(root, filepath)
 
-from gi.repository import Keybinder, GLib
-from dbus.mainloop.glib import DBusGMainLoop
-
-from utils.rofi import RofiMenu
-from utils.menu import DbusMenu
-
-def gnome_hud(_keystr):
-  try:
-    dbus_menu = DbusMenu()
-    rofi_menu = RofiMenu(dbus_menu.actions, dbus_menu.prompt)
-
-    dbus_menu.activate(rofi_menu.selection)
-  except AttributeError:
-    return False
+def in_thread(**kwargs):
+  thread = threading.Thread(**kwargs)
+  thread.start()
 
 
 if __name__ == "__main__":
-  DBusGMainLoop(set_as_default=True)
 
-  Keybinder.init()
-  Keybinder.bind('<Ctrl><Alt>space', gnome_hud)
-
-  try:
-    GLib.MainLoop().run()
-  except KeyboardInterrupt:
-    GLib.MainLoop().quit()
+  hud = relative_path('utils/hud.py')
+  in_thread(target=os.system, args=[hud])
