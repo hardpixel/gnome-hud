@@ -13,6 +13,8 @@ def in_thread(**kwargs):
 
 
 if __name__ == "__main__":
+  service = relative_path('utils/service.py')
+  in_thread(target=os.system, args=[service])
 
   hud = relative_path('utils/hud.py')
   in_thread(target=os.system, args=[hud])
