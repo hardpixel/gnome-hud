@@ -8,8 +8,8 @@ from gi.repository import Gtk
 class RofiMenu:
 
   def __init__(self, menu_keys, prompt):
-    self.items  = self.parse_items(menu_keys)
     self.prompt = self.parse_prompt(prompt)
+    self.items  = self.parse_items(menu_keys)
     self.menu   = self.open_menu()
 
   @property
@@ -35,6 +35,9 @@ class RofiMenu:
         string += '\n' + menu_item
     except ValueError:
       string = 'Quit'
+      alert  = 'No menu items available! Showing only "Quit" entry.'
+
+      print('gnomeHUD: WARNING: (%s) %s' % (self.prompt, alert))
 
     return string.encode('utf-8')
 
