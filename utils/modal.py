@@ -15,14 +15,14 @@ from fuzzywuzzy import fuzz
 
 class Command(GObject.GObject):
 
-  text  = GObject.Property(type=str)
+  value = GObject.Property(type=str)
   index = GObject.Property(type=int)
 
   def __init__(self, *args, **kwargs):
     super(GObject.GObject, self).__init__(*args, **kwargs)
 
   def ratio(self, comparable, reverse=False):
-    ratio = fuzz.ratio(self.text.lower(), comparable.lower())
+    ratio = fuzz.ratio(self.value.lower(), comparable.lower())
     return (ratio - 100) if reverse else ratio
 
   def position(self, comparable):
@@ -33,7 +33,7 @@ class Command(GObject.GObject):
 
   def string_matches(self, comparable):
     ratio = self.ratio(comparable)
-    match = comparable.lower() in self.text.lower()
+    match = comparable.lower() in self.value.lower()
 
     return match or ratio > 30
 
@@ -57,7 +57,7 @@ class CommandRow(Gtk.ListBoxRow):
 
   def on_command_changed(self, list_row, param):
     command = self.get_property('command')
-    self.label.set_label(command.text)
+    self.label.set_label(command.value)
 
 
 class CommandList(Gtk.ListBox):
@@ -112,8 +112,8 @@ class CommandList(Gtk.ListBox):
     return item.command.visibility(self.selection_filter)
 
   def append_row_items(self, items):
-    for index, text in enumerate(items):
-      object = Command(text=text, index=index)
+    for index, value in enumerate(items):
+      object = Command(value=value, index=index)
       self.list_store.append(object)
 
   def select_row_index(self, index):
@@ -134,7 +134,7 @@ class CommandList(Gtk.ListBox):
 
   def on_selection_selected(self, listbox, listbox_row):
     if listbox_row:
-      self.selection_value = listbox_row.command.text
+      self.selection_value = listbox_row.command.value
 
 
 class ModalMenu(Gtk.Window):
