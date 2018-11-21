@@ -75,8 +75,6 @@ class CommandList(Gtk.ListBox):
     self.bind_model(self.list_store, self.create_function)
     self.connect('row-selected', self.on_selection_selected)
 
-    # self.list_store.set_sort_func(self.sort_function)
-
     self.dbus_menu = DbusMenu()
     self.append_row_items(self.dbus_menu.actions)
 
@@ -105,8 +103,8 @@ class CommandList(Gtk.ListBox):
     return item
 
   def sort_function(self, prev_item, next_item):
-    prev_value = prev_item.position(self.selection_value)
-    next_value = next_item.position(self.selection_value)
+    prev_value = prev_item.command.position(self.selection_value)
+    next_value = next_item.command.position(self.selection_value)
 
     return prev_value > next_value
 
@@ -119,7 +117,7 @@ class CommandList(Gtk.ListBox):
       object.set_property('text', item)
       object.set_property('index', index)
 
-      self.list_store.insert_sorted(object, self.sort_function)
+      self.list_store.append(object)
 
   def select_row_index(self, index):
     children = self.get_children()
