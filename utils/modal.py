@@ -2,86 +2,138 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
+gi.require_version('Gio', '2.0')
 
 from gi.repository import Gtk
 from gi.repository import Gdk
+from gi.repository import Gio
+from gi.repository import GObject
 
 from menu import DbusMenu
+from fuzzywuzzy import fuzz
 
 
-class CommandList(Gtk.TreeView):
+class CommandItem(GObject.GObject):
+
+  text  = GObject.Property(type=str)
+  index = GObject.Property(type=int)
+
+  def __init__(self, *args, **kwargs):
+    super(CommandItem, self).__init__()
+
+
+class CommandRow(Gtk.ListBoxRow):
+
+  command = GObject.Property(type=object)
+
+  def __init__(self, *args, **kwargs):
+    super(CommandRow, self).__init__()
+
+    self.label = Gtk.Label(margin=6, margin_left=10, margin_right=10)
+    self.label.set_justify(Gtk.Justification.LEFT)
+    self.label.set_halign(Gtk.Align.START)
+
+    self.add(self.label)
+    self.set_can_focus(False)
+    self.show_all()
+
+    self.connect('notify::command', self.on_command_changed)
+
+  def on_command_changed(self, list_row, param):
+    command = self.get_property('command')
+    self.label.set_label(command.text)
+
+
+class CommandList(Gtk.ListBox):
 
   def __init__(self):
     super(CommandList, self).__init__()
 
-    self.selection_value    = None
-    self.selection_treeiter = None
+    self.selection_value  = ''
+    self.selection_filter = ''
 
-    self.set_can_focus(False)
-    self.set_headers_visible(False)
-    self.set_enable_search(True)
-    self.set_search_column(0)
-    self.set_search_value()
+    self.set_sort_func(self.sort_function)
+    self.set_filter_func(self.filter_function)
+    self.add_events(Gdk.EventMask.KEY_PRESS_MASK)
 
-    self.list_store = Gtk.ListStore(str)
-    self.set_model(self.list_store)
-    self.set_search_equal_func(self.search_function)
-
-    self.list_filter = self.list_store.filter_new()
-    self.list_filter.set_visible_func(self.filter_function, data=None)
+    self.list_store = Gio.ListStore()
+    self.bind_model(self.list_store, self.create_function)
+    self.connect('row-selected', self.on_selection_selected)
 
     self.dbus_menu = DbusMenu()
-    self.append_items(self.dbus_menu.actions)
+    self.append_row_items(self.dbus_menu.actions)
 
-    self.render = Gtk.CellRendererText()
-    self.column = Gtk.TreeViewColumn('Command', self.render, text=0)
-    self.append_column(self.column)
+  @property
 
-    self.select = self.get_selection()
-    self.select.connect('changed', self.on_tree_selection_changed)
+  def selected_row_index(self):
+    selected = self.get_selected_row()
+    return selected.get_index() if selected else 0
 
-  def search_function(self, model, column, key, treeiter):
-    command = model[treeiter][column]
-    return key.lower() not in command.lower()
+  def set_filter_value(self, value=None):
+    self.selection_filter = value or ''
 
-  def filter_function(self, model, treeiter, user_data):
-    command = model[treeiter][0]
-    return self.search_value.lower() in command.lower()
-
-  def append_items(self, items):
-    for item in items:
-      self.list_store.append([item])
-
-  def select_iter(self, treeiter):
-    if treeiter:
-      self.select.select_iter(treeiter)
-
-  def set_search_value(self, value=None):
-    self.search_value = value or ''
-
-  def select_first_item(self):
-    treeiter = self.list_store.get_iter_first()
-    self.select_iter(treeiter)
-
-  def select_previous_item(self):
-    treeiter = self.list_store.iter_previous(self.selection_treeiter)
-    self.select_iter(treeiter)
-
-  def select_next_item(self):
-    treeiter = self.list_store.iter_next(self.selection_treeiter)
-    self.select_iter(treeiter)
+    self.invalidate_sort()
+    self.invalidate_filter()
+    self.select_first_item()
 
   def execute_command(self, callback):
     if self.selection_value:
       self.dbus_menu.activate(self.selection_value)
       callback()
 
-  def on_tree_selection_changed(self, select):
-    model, treeiter = select.get_selected()
+  def create_function(self, object):
+    item = CommandRow()
+    item.set_property('command', object)
 
-    if treeiter is not None:
-      self.selection_value    = model[treeiter][0]
-      self.selection_treeiter = treeiter
+    return item
+
+  def sort_function(self, prev_item, next_item):
+    prev_value = prev_item.command.index
+    next_value = next_item.command.index
+
+    if bool(self.selection_filter):
+      next_value = fuzz.ratio(prev_item.command.text.lower(), self.selection_filter.lower())
+      prev_value = fuzz.ratio(next_item.command.text.lower(), self.selection_filter.lower())
+
+    return prev_value > next_value
+
+  def filter_function(self, item):
+    if bool(self.selection_filter):
+      text   = item.command.text.lower()
+      filter = self.selection_filter.lower()
+      ratio  = fuzz.ratio(text, filter)
+
+      return filter in text or ratio > 30
+
+    return True
+
+  def append_row_items(self, items):
+    for index, item in enumerate(items):
+      object = CommandItem()
+      object.set_property('text', item)
+      object.set_property('index', index)
+
+      self.list_store.append(object)
+
+  def select_row_index(self, index):
+    children = self.get_children()
+    maxindex = len(children)
+
+    if index > -1 and index < maxindex:
+      self.select_row(children[index])
+
+  def select_first_item(self):
+    self.select_row_index(0)
+
+  def select_previous_item(self):
+    self.select_row_index(self.selected_row_index - 1)
+
+  def select_next_item(self):
+    self.select_row_index(self.selected_row_index + 1)
+
+  def on_selection_selected(self, listbox, listbox_row):
+    if listbox_row:
+      self.selection_value = listbox_row.command.text
 
 
 class ModalMenu(Gtk.Window):
@@ -98,13 +150,12 @@ class ModalMenu(Gtk.Window):
     self.set_default_size(640, 250)
     self.set_size_request(640, 250)
 
+    self.command_list = CommandList()
+    self.command_list.select_first_item()
+
     self.search_entry = Gtk.SearchEntry(hexpand=True, margin=2)
     self.search_entry.connect_after('changed', self.on_search_entry_changed)
     self.search_entry.connect('activate', self.on_search_entry_activated)
-
-    self.command_list = CommandList()
-    self.command_list.set_search_entry(self.search_entry)
-    self.command_list.select_first_item()
 
     self.scrolled_window = Gtk.ScrolledWindow(hadjustment=None, vadjustment=None)
     self.scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
@@ -145,20 +196,17 @@ class ModalMenu(Gtk.Window):
     if event.keyval == Gdk.KEY_Tab or event.keyval == Gdk.KEY_ISO_Left_Tab:
       return True
 
-    if event.keyval == Gdk.KEY_Up:
-      self.command_list.select_previous_item()
-      return True
-
-    if event.keyval == Gdk.KEY_Down:
-      self.command_list.select_next_item()
-      return True
+    if event.keyval == Gdk.KEY_Up or event.keyval == Gdk.KEY_Down:
+      return self.command_list.event(event)
 
   def on_search_entry_changed(self, *args):
     search_value = self.search_entry.get_text()
-    self.command_list.set_search_value(search_value)
-
-    if not search_value:
-      self.command_list.select_first_item()
+    self.command_list.set_filter_value(search_value)
 
   def on_search_entry_activated(self, *args):
     self.command_list.execute_command(self.destroy)
+
+
+if __name__ == '__main__':
+  modal = ModalMenu()
+  modal.open()
