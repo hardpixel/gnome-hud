@@ -2,11 +2,11 @@ import gi
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
-gi.require_version('Gio', '2.0')
+gi.require_version('GLib', '2.0')
 
 from gi.repository import Gtk
 from gi.repository import Gdk
-from gi.repository import Gio
+from gi.repository import GLib
 from gi.repository import GObject
 
 from menu import DbusMenu
@@ -38,7 +38,7 @@ class Command(GObject.GObject):
     return match or ratio > 30
 
 
-class CommandRow(Gtk.ListBoxRow):
+class CommandListItem(Gtk.ListBoxRow):
 
   command = GObject.Property(type=object)
 
@@ -48,14 +48,15 @@ class CommandRow(Gtk.ListBoxRow):
     self.label = Gtk.Label(margin=6, margin_left=10, margin_right=10)
     self.label.set_justify(Gtk.Justification.LEFT)
     self.label.set_halign(Gtk.Align.START)
-
     self.add(self.label)
+
     self.set_can_focus(False)
     self.show_all()
 
     self.connect('notify::command', self.on_command_changed)
+    self.on_command_changed()
 
-  def on_command_changed(self, list_row, param):
+  def on_command_changed(self, *args):
     command = self.get_property('command')
     self.label.set_label(command.value)
 
@@ -65,76 +66,71 @@ class CommandList(Gtk.ListBox):
   def __init__(self, *args, **kwargs):
     super(Gtk.ListBox, self).__init__(*args, **kwargs)
 
-    self.selection_value  = ''
-    self.selection_filter = ''
+    self.select_value = ''
+    self.filter_value = ''
+    self.visible_rows = []
+    self.selected_row = 0
 
+    self.set_sort_func(self.sort_function)
     self.set_filter_func(self.filter_function)
-    self.add_events(Gdk.EventMask.KEY_PRESS_MASK)
 
-    self.list_store = Gio.ListStore()
-    self.bind_model(self.list_store, self.create_function)
-    self.connect('row-selected', self.on_selection_selected)
+    self.connect('row-selected', self.on_row_selected)
 
     self.dbus_menu = DbusMenu()
     self.append_row_items(self.dbus_menu.actions)
 
-  @property
-
-  def selected_row_index(self):
-    selected = self.get_selected_row()
-    return selected.get_index() if selected else 0
-
   def set_filter_value(self, value=None):
-    self.selection_filter = value or ''
+    self.visible_rows = []
+    self.filter_value = value
 
-    self.invalidate_sort()
+    self.unselect_all()
     self.invalidate_filter()
-    self.select_first_item()
+    self.invalidate_sort()
+    self.invalidate_selection()
+
+  def invalidate_selection(self):
+    adjust = self.get_adjustment()
+    self.select_row_by_index(0)
+
+    return adjust.set_value(0) if adjust else False
 
   def execute_command(self, callback):
-    if self.selection_value:
-      self.dbus_menu.activate(self.selection_value)
+    if self.select_value:
+      self.dbus_menu.activate(self.select_value)
       callback()
 
-  def create_function(self, object):
-    item = CommandRow()
-    item.set_property('command', object)
-
-    return item
-
   def sort_function(self, prev_item, next_item):
-    prev_value = prev_item.command.position(self.selection_value)
-    next_value = next_item.command.position(self.selection_value)
+    prev_value = prev_item.command.position(self.select_value)
+    next_value = next_item.command.position(self.select_value)
 
     return prev_value > next_value
 
   def filter_function(self, item):
-    return item.command.visibility(self.selection_filter)
+    visible = item.command.visibility(self.filter_value)
+    self.append_visible_row(item, visible)
+
+    return visible
 
   def append_row_items(self, items):
     for index, value in enumerate(items):
       object = Command(value=value, index=index)
-      self.list_store.append(object)
+      objrow = CommandListItem(command=object)
 
-  def select_row_index(self, index):
-    children = self.get_children()
-    maxindex = len(children)
+      self.add(objrow)
 
-    if index > -1 and index < maxindex:
-      self.select_row(children[index])
+  def append_visible_row(self, row, visibility):
+    if visibility:
+      self.visible_rows.append(row)
 
-  def select_first_item(self):
-    self.select_row_index(0)
+  def select_row_by_index(self, index):
+    index_range = range(0, len(self.visible_rows))
 
-  def select_previous_item(self):
-    self.select_row_index(self.selected_row_index - 1)
+    if index in index_range:
+      self.selected_row = index
+      self.select_row(self.visible_rows[index])
 
-  def select_next_item(self):
-    self.select_row_index(self.selected_row_index + 1)
-
-  def on_selection_selected(self, listbox, listbox_row):
-    if listbox_row:
-      self.selection_value = listbox_row.command.value
+  def on_row_selected(self, listbox, item):
+    self.select_value = item.command.value if item else ''
 
 
 class ModalMenu(Gtk.Window):
@@ -152,10 +148,10 @@ class ModalMenu(Gtk.Window):
     self.set_size_request(640, 250)
 
     self.command_list = CommandList()
-    self.command_list.select_first_item()
+    self.command_list.invalidate_selection()
 
     self.search_entry = Gtk.SearchEntry(hexpand=True, margin=2)
-    self.search_entry.connect_after('changed', self.on_search_entry_changed)
+    self.search_entry.connect('changed', self.on_search_entry_changed)
     self.search_entry.connect('activate', self.on_search_entry_activated)
 
     self.scrolled_window = Gtk.ScrolledWindow(hadjustment=None, vadjustment=None)
@@ -191,8 +187,7 @@ class ModalMenu(Gtk.Window):
 
   def on_window_key_pressed(self, window, event):
     if event.keyval == Gdk.KEY_Escape:
-      self.destroy()
-      return True
+      return self.destroy()
 
     if event.keyval == Gdk.KEY_Tab or event.keyval == Gdk.KEY_ISO_Left_Tab:
       return True
