@@ -21,6 +21,22 @@ class CommandItem(GObject.GObject):
   def __init__(self, *args, **kwargs):
     super(CommandItem, self).__init__()
 
+  def ratio(self, comparable, reverse=False):
+    ratio = fuzz.ratio(self.text.lower(), comparable.lower())
+    return (ratio - 100) if reverse else ratio
+
+  def position(self, comparable):
+    return self.ratio(comparable, True) if bool(comparable) else self.index
+
+  def visibility(self, comparable):
+    return self.string_matches(comparable) if bool(comparable) else True
+
+  def string_matches(self, comparable):
+    ratio = self.ratio(comparable)
+    match = comparable.lower() in self.text.lower()
+
+    return match or ratio > 30
+
 
 class CommandRow(Gtk.ListBoxRow):
 
