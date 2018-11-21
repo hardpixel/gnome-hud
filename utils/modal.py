@@ -68,6 +68,7 @@ class CommandList(Gtk.ListBox):
     self.filter_value = ''
     self.visible_rows = []
     self.selected_row = 0
+    self.selected_obj = None
 
     self.set_sort_func(self.sort_function)
     self.set_filter_func(self.filter_function)
@@ -125,7 +126,15 @@ class CommandList(Gtk.ListBox):
 
     if index in index_range:
       self.selected_row = index
-      self.select_row(self.visible_rows[index])
+      self.selected_obj = self.visible_rows[index]
+
+      self.selected_obj.activate()
+
+  def select_previous_row(self):
+    self.select_row_by_index(self.selected_row - 1)
+
+  def select_next_row(self):
+    self.select_row_by_index(self.selected_row + 1)
 
   def on_row_selected(self, listbox, item):
     self.select_value = item.command.value if item else ''
@@ -190,8 +199,11 @@ class ModalMenu(Gtk.Window):
     if event.keyval == Gdk.KEY_Tab or event.keyval == Gdk.KEY_ISO_Left_Tab:
       return True
 
-    if event.keyval == Gdk.KEY_Up or event.keyval == Gdk.KEY_Down:
-      return self.command_list.event(event)
+    if event.keyval == Gdk.KEY_Up:
+      return self.command_list.select_previous_row()
+
+    if event.keyval == Gdk.KEY_Down:
+      return self.command_list.select_next_row()
 
   def on_search_entry_changed(self, *args):
     search_value = self.search_entry.get_text()
