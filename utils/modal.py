@@ -68,13 +68,14 @@ class CommandList(Gtk.ListBox):
     self.selection_value  = ''
     self.selection_filter = ''
 
-    self.set_sort_func(self.sort_function)
     self.set_filter_func(self.filter_function)
     self.add_events(Gdk.EventMask.KEY_PRESS_MASK)
 
     self.list_store = Gio.ListStore()
     self.bind_model(self.list_store, self.create_function)
     self.connect('row-selected', self.on_selection_selected)
+
+    # self.list_store.set_sort_func(self.sort_function)
 
     self.dbus_menu = DbusMenu()
     self.append_row_items(self.dbus_menu.actions)
@@ -104,24 +105,13 @@ class CommandList(Gtk.ListBox):
     return item
 
   def sort_function(self, prev_item, next_item):
-    prev_value = prev_item.command.index
-    next_value = next_item.command.index
-
-    if bool(self.selection_filter):
-      next_value = fuzz.ratio(prev_item.command.text.lower(), self.selection_filter.lower())
-      prev_value = fuzz.ratio(next_item.command.text.lower(), self.selection_filter.lower())
+    prev_value = prev_item.position(self.selection_value)
+    next_value = next_item.position(self.selection_value)
 
     return prev_value > next_value
 
   def filter_function(self, item):
-    if bool(self.selection_filter):
-      text   = item.command.text.lower()
-      filter = self.selection_filter.lower()
-      ratio  = fuzz.ratio(text, filter)
-
-      return filter in text or ratio > 30
-
-    return True
+    return item.command.visibility(self.selection_filter)
 
   def append_row_items(self, items):
     for index, item in enumerate(items):
@@ -129,7 +119,7 @@ class CommandList(Gtk.ListBox):
       object.set_property('text', item)
       object.set_property('index', index)
 
-      self.list_store.append(object)
+      self.list_store.insert_sorted(object, self.sort_function)
 
   def select_row_index(self, index):
     children = self.get_children()
