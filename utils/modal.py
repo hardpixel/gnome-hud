@@ -13,13 +13,13 @@ from menu import DbusMenu
 from fuzzywuzzy import fuzz
 
 
-class CommandItem(GObject.GObject):
+class Command(GObject.GObject):
 
   text  = GObject.Property(type=str)
   index = GObject.Property(type=int)
 
   def __init__(self, *args, **kwargs):
-    super(CommandItem, self).__init__()
+    super(GObject.GObject, self).__init__(*args, **kwargs)
 
   def ratio(self, comparable, reverse=False):
     ratio = fuzz.ratio(self.text.lower(), comparable.lower())
@@ -112,11 +112,8 @@ class CommandList(Gtk.ListBox):
     return item.command.visibility(self.selection_filter)
 
   def append_row_items(self, items):
-    for index, item in enumerate(items):
-      object = CommandItem()
-      object.set_property('text', item)
-      object.set_property('index', index)
-
+    for index, text in enumerate(items):
+      object = Command(text=text, index=index)
       self.list_store.append(object)
 
   def select_row_index(self, index):
