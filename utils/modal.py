@@ -43,7 +43,7 @@ class CommandRow(Gtk.ListBoxRow):
   command = GObject.Property(type=object)
 
   def __init__(self, *args, **kwargs):
-    super(CommandRow, self).__init__()
+    super(Gtk.ListBoxRow, self).__init__(*args, **kwargs)
 
     self.label = Gtk.Label(margin=6, margin_left=10, margin_right=10)
     self.label.set_justify(Gtk.Justification.LEFT)
@@ -62,8 +62,8 @@ class CommandRow(Gtk.ListBoxRow):
 
 class CommandList(Gtk.ListBox):
 
-  def __init__(self):
-    super(CommandList, self).__init__()
+  def __init__(self, *args, **kwargs):
+    super(Gtk.ListBox, self).__init__(*args, **kwargs)
 
     self.selection_value  = ''
     self.selection_filter = ''
@@ -142,8 +142,8 @@ class CommandList(Gtk.ListBox):
 
 class ModalMenu(Gtk.Window):
 
-  def __init__(self):
-    super(ModalMenu, self).__init__()
+  def __init__(self, *args, **kwargs):
+    super(Gtk.Window, self).__init__(*args, **kwargs)
 
     self.skip_taskbar_hint   = True
     self.destroy_with_parent = True
