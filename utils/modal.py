@@ -23,6 +23,8 @@ class CommandListItem(Gtk.ListBoxRow):
   def __init__(self, *args, **kwargs):
     super(Gtk.ListBoxRow, self).__init__(*args, **kwargs)
 
+    self.visible = True
+
     self.set_can_focus(False)
 
     self.query = self.get_property('query')
@@ -44,8 +46,10 @@ class CommandListItem(Gtk.ListBoxRow):
     return self.fuzzy.score(query) if bool(query) else 0
 
   def visibility(self, query):
+    self.visible = self.fuzzy.score(query) > -1 if bool(query) else True
     self.set_property('query', query)
-    return self.fuzzy.score(query) > -1 if bool(query) else True
+
+    return self.visible
 
   def underline_matches(self):
     words = self.query.replace(' ', '|')
@@ -65,7 +69,8 @@ class CommandListItem(Gtk.ListBoxRow):
       self.label.set_markup(self.value)
 
   def on_query_notify(self, *args):
-    GLib.idle_add(self.do_label_markup)
+    if self.visible:
+      GLib.idle_add(self.do_label_markup)
 
 
 class CommandList(Gtk.ListBox):
@@ -170,7 +175,7 @@ class CommandWindow(Gtk.ApplicationWindow):
     self.command_list.invalidate_selection()
 
     self.search_entry = Gtk.SearchEntry(hexpand=True, margin=2)
-    self.search_entry.connect('changed', self.on_search_entry_changed)
+    self.search_entry.connect('search-changed', self.on_search_entry_changed)
 
     self.scrolled_window = Gtk.ScrolledWindow(hadjustment=None, vadjustment=None)
     self.scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
@@ -194,7 +199,7 @@ class CommandWindow(Gtk.ApplicationWindow):
 
   def on_search_entry_changed(self, *args):
     search_value = self.search_entry.get_text()
-    GLib.idle_add(self.command_list.set_filter_value, search_value)
+    self.command_list.set_filter_value(search_value)
 
 
 class ModalMenu(Gtk.Application):
