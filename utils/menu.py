@@ -5,6 +5,9 @@ gi.require_version('Bamf', '3')
 
 from gi.repository import Gdk, Gio, Bamf
 
+SEPARATOR = u'\u0020\u0020\u00BB\u0020\u0020'
+
+
 class DbusMenu:
 
   def __init__(self):
@@ -153,14 +156,13 @@ class DbusMenu:
     self.explore_gtkmenu_items(menu_id, labels)
 
   def format_labels(self, labels):
-    separator   = u'\u0020\u0020\u00BB\u0020\u0020'
     head, *tail = labels
     result      = head
 
     for label in tail:
-      result = result + separator + label
+      result = result + SEPARATOR + label
 
-    result = result.replace('Root%s' % separator, '')
+    result = result.replace('Root%s' % SEPARATOR, '')
     result = result.replace('_', '')
 
     return result.strip()

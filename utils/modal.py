@@ -8,32 +8,78 @@ from gi.repository import Gdk
 from gi.repository import GObject
 
 from menu import DbusMenu
-from fuzzywuzzy import fuzz
+from menu import SEPARATOR
 
 
-class Command(GObject.GObject):
+def normalize_string(string):
+  string = string.replace(SEPARATOR, ' ')
+  string = string.replace('...', ' ')
+  string = string.replace('\s+', ' ')
+  string = string.strip()
 
-  value = GObject.Property(type=str)
-  index = GObject.Property(type=int)
+  return string.lower()
 
-  def __init__(self, *args, **kwargs):
-    super(GObject.GObject, self).__init__(*args, **kwargs)
 
-  def ratio(self, comparable, reverse=False):
-    ratio = fuzz.ratio(self.value.lower(), comparable.lower())
-    return (ratio - 100) if reverse else ratio
+def contains_words(text, words, require_all=True):
+  for word in words:
+    if word in text:
+      if not require_all:
+        return True
+    elif require_all:
+      return False
+
+  return require_all
+
+
+class Command(object):
+
+  def __init__(self, index, value):
+    self.index = index
+    self.value = value
+    self.parts = self.value.split(SEPARATOR)
+    self.label = self.parts[-1]
+
+  def score(self, comparable):
+    value = normalize_string(self.value)
+    query = normalize_string(comparable)
+    words = query.split(' ')
+    label = self.label.lower()
+
+    score = 0
+    if label == query:
+      return score
+
+    score = score + 1
+    if label.startswith(query):
+      return score
+
+    score = score + 1
+    if query in label:
+      return score
+
+    score = score + 1
+    if contains_words(label, words):
+      return score
+
+    score = score + 1
+    if contains_words(label, words, False):
+      return score
+
+    score = score + 1
+    if contains_words(value, words):
+      return score
+
+    score = score + 1
+    if contains_words(value, words, False):
+      return score
+
+    return -1
 
   def position(self, comparable):
-    return self.ratio(comparable, True) if bool(comparable) else self.index
+    return self.score(comparable) if bool(comparable) else 0
 
   def visibility(self, comparable):
-    return self.string_matches(comparable) if bool(comparable) else True
-
-  def string_matches(self, comparable):
-    ratio = self.ratio(comparable)
-    match = comparable.lower() in self.value.lower()
-
-    return match or ratio > 30
+    return self.score(comparable) > -1 if bool(comparable) else True
 
 
 class CommandListItem(Gtk.ListBoxRow):
@@ -99,10 +145,13 @@ class CommandList(Gtk.ListBox):
       callback()
 
   def sort_function(self, prev_item, next_item):
-    prev_value = prev_item.command.position(self.select_value)
-    next_value = next_item.command.position(self.select_value)
+    prev_score = prev_item.command.position(self.select_value)
+    next_score = next_item.command.position(self.select_value)
 
-    return prev_value > next_value
+    score_diff = prev_score - next_score
+    index_diff = prev_item.command.index - next_item.command.index
+
+    return index_diff if score_diff == 0 else index_diff
 
   def filter_function(self, item):
     visible = item.command.visibility(self.filter_value)
