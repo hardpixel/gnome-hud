@@ -8,85 +8,20 @@ from gi.repository import Gdk
 from gi.repository import GObject
 
 from menu import DbusMenu
-from menu import SEPARATOR
-
-
-def normalize_string(string):
-  string = string.replace(SEPARATOR, ' ')
-  string = string.replace('\s+', ' ')
-  string = string.strip()
-
-  return string.lower()
-
-
-def contains_words(text, words, require_all=True):
-  for word in words:
-    if word in text:
-      if not require_all:
-        return True
-    elif require_all:
-      return False
-
-  return require_all
-
-
-class Command(object):
-
-  def __init__(self, index, value):
-    self.index = index
-    self.value = value
-    self.parts = self.value.split(SEPARATOR)
-    self.label = self.parts[-1]
-
-  def score(self, query):
-    value = normalize_string(self.value)
-    label = normalize_string(self.label)
-    query = normalize_string(query)
-    words = query.split(' ')
-
-    score = 0
-    if label == query:
-      return score
-
-    score += 1
-    if label.startswith(query):
-      return score
-
-    score += 1
-    if query in label:
-      return score
-
-    score += 1
-    if contains_words(label, words):
-      return score
-
-    score += 1
-    if contains_words(label, words, False):
-      return score
-
-    score += 1
-    if contains_words(value, words):
-      return score
-
-    score += 1
-    if contains_words(value, words, False):
-      return score
-
-    return -1
-
-  def position(self, query):
-    return self.score(query) if bool(query) else 0
-
-  def visibility(self, query):
-    return self.score(query) > -1 if bool(query) else True
+from fuzzy import FuzzyMatch
 
 
 class CommandListItem(Gtk.ListBoxRow):
 
-  command = GObject.Property(type=object)
+  value = GObject.Property(type=str)
+  index = GObject.Property(type=int)
 
   def __init__(self, *args, **kwargs):
     super(Gtk.ListBoxRow, self).__init__(*args, **kwargs)
+
+    self.value = self.get_property('value')
+    self.index = self.get_property('index')
+    self.fuzzy = FuzzyMatch(text=self.value)
 
     self.label = Gtk.Label(margin=6, margin_left=10, margin_right=10)
     self.label.set_justify(Gtk.Justification.LEFT)
@@ -96,12 +31,18 @@ class CommandListItem(Gtk.ListBoxRow):
     self.set_can_focus(False)
     self.show_all()
 
-    self.connect('notify::command', self.on_command_changed)
-    self.on_command_changed()
+    self.connect('notify::value', self.on_value_changed)
+    self.on_value_changed()
 
-  def on_command_changed(self, *args):
-    command = self.get_property('command')
-    self.label.set_label(command.value)
+  def position(self, query):
+    return self.fuzzy.score(query) if bool(query) else 0
+
+  def visibility(self, query):
+    return self.fuzzy.score(query) > -1 if bool(query) else True
+
+  def on_value_changed(self, *args):
+    value = self.get_property('value')
+    self.label.set_label(value)
 
 
 class CommandList(Gtk.ListBox):
@@ -144,26 +85,24 @@ class CommandList(Gtk.ListBox):
       callback()
 
   def sort_function(self, prev_item, next_item):
-    prev_score = prev_item.command.position(self.select_value)
-    next_score = next_item.command.position(self.select_value)
+    prev_score = prev_item.position(self.select_value)
+    next_score = next_item.position(self.select_value)
 
     score_diff = prev_score - next_score
-    index_diff = prev_item.command.index - next_item.command.index
+    index_diff = prev_item.index - next_item.index
 
     return index_diff if score_diff == 0 else index_diff
 
   def filter_function(self, item):
-    visible = item.command.visibility(self.filter_value)
+    visible = item.visibility(self.filter_value)
     self.append_visible_row(item, visible)
 
     return visible
 
   def append_row_items(self, items):
     for index, value in enumerate(items):
-      object = Command(value=value, index=index)
-      objrow = CommandListItem(command=object)
-
-      self.add(objrow)
+      command = CommandListItem(value=value, index=index)
+      self.add(command)
 
   def append_visible_row(self, row, visibility):
     if visibility:
@@ -185,7 +124,7 @@ class CommandList(Gtk.ListBox):
     self.select_row_by_index(self.selected_row + 1)
 
   def on_row_selected(self, listbox, item):
-    self.select_value = item.command.value if item else ''
+    self.select_value = item.value if item else ''
 
 
 class ModalMenu(Gtk.Window):
