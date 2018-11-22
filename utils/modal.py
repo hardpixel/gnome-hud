@@ -1,3 +1,4 @@
+import re
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -6,6 +7,7 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk
 from gi.repository import Gdk
 from gi.repository import Gio
+from gi.repository import GLib
 from gi.repository import GObject
 
 from menu import DbusMenu
@@ -16,12 +18,14 @@ class CommandListItem(Gtk.ListBoxRow):
 
   value = GObject.Property(type=str)
   index = GObject.Property(type=int)
+  query = GObject.Property(type=str)
 
   def __init__(self, *args, **kwargs):
     super(Gtk.ListBoxRow, self).__init__(*args, **kwargs)
 
     self.set_can_focus(False)
 
+    self.query = self.get_property('query')
     self.value = self.get_property('value')
     self.index = self.get_property('index')
     self.fuzzy = FuzzyMatch(text=self.value)
@@ -29,7 +33,9 @@ class CommandListItem(Gtk.ListBoxRow):
     self.label = Gtk.Label(margin=6, margin_left=10, margin_right=10)
     self.label.set_justify(Gtk.Justification.LEFT)
     self.label.set_halign(Gtk.Align.START)
-    self.label.set_label(self.value)
+    self.label.set_markup(self.value)
+
+    self.connect('notify::query', self.on_query_notify)
 
     self.add(self.label)
     self.show_all()
@@ -38,7 +44,28 @@ class CommandListItem(Gtk.ListBoxRow):
     return self.fuzzy.score(query) if bool(query) else 0
 
   def visibility(self, query):
+    self.set_property('query', query)
     return self.fuzzy.score(query) > -1 if bool(query) else True
+
+  def underline_matches(self):
+    words = self.query.replace(' ', '|')
+    regex = re.compile(words, re.IGNORECASE)
+    value = regex.sub(self.format_matched_string, self.value)
+
+    self.label.set_markup(value)
+
+  def format_matched_string(self, match):
+    return '<u>%s</u>' % match.group(0)
+
+  def do_label_markup(self):
+    if bool(self.query):
+      self.underline_matches()
+
+    elif '<u>' in self.label.get_label():
+      self.label.set_markup(self.value)
+
+  def on_query_notify(self, *args):
+    GLib.idle_add(self.do_label_markup)
 
 
 class CommandList(Gtk.ListBox):
@@ -65,10 +92,10 @@ class CommandList(Gtk.ListBox):
     self.visible_rows = []
     self.filter_value = value
 
-    self.unselect_all()
     self.invalidate_filter()
     self.invalidate_sort()
-    self.invalidate_selection()
+
+    GLib.idle_add(self.invalidate_selection)
 
   def invalidate_selection(self):
     adjust = self.get_adjustment()
@@ -100,8 +127,8 @@ class CommandList(Gtk.ListBox):
     self.select_row_by_index(self.selected_row + 1)
 
   def sort_function(self, prev_item, next_item):
-    prev_score = prev_item.position(self.select_value)
-    next_score = next_item.position(self.select_value)
+    prev_score = prev_item.position(self.filter_value)
+    next_score = next_item.position(self.filter_value)
 
     score_diff = prev_score - next_score
     index_diff = prev_item.index - next_item.index
@@ -167,7 +194,7 @@ class CommandWindow(Gtk.ApplicationWindow):
 
   def on_search_entry_changed(self, *args):
     search_value = self.search_entry.get_text()
-    self.command_list.set_filter_value(search_value)
+    GLib.idle_add(self.command_list.set_filter_value, search_value)
 
 
 class ModalMenu(Gtk.Application):
