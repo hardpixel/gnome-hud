@@ -35,7 +35,7 @@ class CommandListItem(Gtk.ListBoxRow):
     self.label = Gtk.Label(margin=6, margin_left=10, margin_right=10)
     self.label.set_justify(Gtk.Justification.LEFT)
     self.label.set_halign(Gtk.Align.START)
-    self.label.set_markup(self.value)
+    self.label.set_label(self.value)
 
     self.connect('notify::query', self.on_query_notify)
 
@@ -55,6 +55,7 @@ class CommandListItem(Gtk.ListBoxRow):
     words = self.query.replace(' ', '|')
     regex = re.compile(words, re.IGNORECASE)
     value = regex.sub(self.format_matched_string, self.value)
+    value = value.replace('&', '&amp;')
 
     self.label.set_markup(value)
 
@@ -66,7 +67,7 @@ class CommandListItem(Gtk.ListBoxRow):
       self.underline_matches()
 
     elif '<u>' in self.label.get_label():
-      self.label.set_markup(self.value)
+      self.label.set_label(self.value)
 
   def on_query_notify(self, *args):
     if self.visible:
