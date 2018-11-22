@@ -4,13 +4,15 @@ import subprocess
 gi.require_version('Gtk', '3.0')
 
 from gi.repository import Gtk
+from menu import DbusMenu
 
 
 class RofiMenu:
 
-  def __init__(self, menu_keys, prompt):
-    self.prompt = self.parse_prompt(prompt)
-    self.items  = self.parse_items(menu_keys)
+  def __init__(self):
+    self.dbus   = DbusMenu()
+    self.prompt = self.parse_prompt(self.dbus.prompt)
+    self.items  = self.parse_items(self.dbus.actions)
     self.menu   = self.open_menu()
 
   @property
@@ -20,6 +22,9 @@ class RofiMenu:
     self.menu.stdin.close()
 
     return selection
+
+  def open(self):
+    self.dbus.activate(self.selection)
 
   def rgba_to_hex(self, color):
     red   = int(color.red * 255)

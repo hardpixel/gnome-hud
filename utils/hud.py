@@ -8,15 +8,13 @@ from gi.repository import Keybinder, GLib
 from dbus.mainloop.glib import DBusGMainLoop
 
 from rofi import RofiMenu
-from menu import DbusMenu
 
 
 def hud(_keystr):
   try:
-    dbus_menu = DbusMenu()
-    rofi_menu = RofiMenu(dbus_menu.actions, dbus_menu.prompt)
+    rofi_menu = RofiMenu()
+    rofi_menu.open()
 
-    dbus_menu.activate(rofi_menu.selection)
   except AttributeError:
     return False
 
