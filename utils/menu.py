@@ -25,6 +25,7 @@ class DbusMenu:
 
     self.explore_dbusmenu()
     self.explore_gtkmenu()
+    self.handle_empty()
 
   @property
 
@@ -168,3 +169,10 @@ class DbusMenu:
     result = result.replace('\s+', ' ')
 
     return result.strip()
+
+  def handle_empty(self):
+    if not len(self.menu_actions):
+      self.menu_actions = { 'Quit': 'sys.quit' }
+
+      alert = 'No menu items available! Showing only "Quit" entry.'
+      print('gnomeHUD: WARNING: (%s) %s' % (self.prompt, alert))

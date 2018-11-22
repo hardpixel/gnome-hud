@@ -34,16 +34,10 @@ class RofiMenu:
     return "#{0:02x}{1:02x}{2:02x}".format(red, green, blue)
 
   def parse_items(self, menu_keys):
-    try:
-      string, *menu_items = menu_keys
+    string, *menu_items = menu_keys
 
-      for menu_item in menu_items:
-        string += '\n' + menu_item
-    except ValueError:
-      string = 'Quit'
-      alert  = 'No menu items available! Showing only "Quit" entry.'
-
-      print('gnomeHUD: WARNING: (%s) %s' % (self.prompt, alert))
+    for menu_item in menu_items:
+      string += '\n' + menu_item
 
     return string.encode('utf-8')
 
