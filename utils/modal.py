@@ -48,12 +48,12 @@ class CommandList(Gtk.ListBox):
   def __init__(self, *args, **kwargs):
     super(Gtk.ListBox, self).__init__(*args, **kwargs)
 
+    self.menu_actions = self.get_property('menu-actions')
     self.select_value = ''
     self.filter_value = ''
     self.visible_rows = []
     self.selected_row = 0
     self.selected_obj = None
-    self.menu_actions = self.get_property('menu-actions')
 
     self.set_sort_func(self.sort_function)
     self.set_filter_func(self.filter_function)
@@ -72,17 +72,19 @@ class CommandList(Gtk.ListBox):
 
   def invalidate_selection(self):
     adjust = self.get_adjustment()
+
+    self.reset_scroll_position(adjust)
     self.select_row_by_index(0)
 
-    return adjust.set_value(0) if adjust else False
-
-  def execute_command(self):
-    if self.select_value:
-      self.dbus_menu.activate(self.select_value)
+  def reset_scroll_position(self, adjustment):
+    if adjustment:
+      adjustment.set_value(0)
+      return True
 
   def append_visible_row(self, row, visibility):
     if visibility:
       self.visible_rows.append(row)
+      return True
 
   def select_row_by_index(self, index):
     if index in range(0, len(self.visible_rows)):
@@ -108,11 +110,7 @@ class CommandList(Gtk.ListBox):
 
   def filter_function(self, item):
     visible = item.visibility(self.filter_value)
-
-    if visible:
-      self.visible_rows.append(item)
-
-    return visible
+    return self.append_visible_row(item, visible)
 
   def on_row_selected(self, listbox, item):
     self.select_value = item.value if item else ''
@@ -124,10 +122,10 @@ class CommandList(Gtk.ListBox):
       command = CommandListItem(value=value, index=index)
       self.add(command)
 
+    self.invalidate_selection()
+
 
 class CommandWindow(Gtk.ApplicationWindow):
-
-  menu_actions = GObject.Property(type=object)
 
   def __init__(self, *args, **kwargs):
     super(Gtk.ApplicationWindow, self).__init__(*args, **kwargs)
@@ -137,12 +135,11 @@ class CommandWindow(Gtk.ApplicationWindow):
     self.modal               = True
     self.window_position     = Gtk.WindowPosition.CENTER_ON_PARENT
     self.type_hint           = Gdk.WindowTypeHint.DIALOG
-    self.menu_actions        = self.get_property('menu-actions')
 
     self.set_default_size(640, 250)
     self.set_size_request(640, 250)
 
-    self.command_list = CommandList(menu_actions=self.menu_actions)
+    self.command_list = CommandList()
     self.command_list.invalidate_selection()
 
     self.search_entry = Gtk.SearchEntry(hexpand=True, margin=2)
@@ -159,9 +156,7 @@ class CommandWindow(Gtk.ApplicationWindow):
     self.add(self.scrolled_window)
 
     self.set_dark_variation()
-
     self.connect('show', self.on_window_show)
-    self.connect('notify::menu-actions', self.on_menu_actions_notify)
 
   def set_dark_variation(self):
     settings = Gtk.Settings.get_default()
@@ -173,9 +168,6 @@ class CommandWindow(Gtk.ApplicationWindow):
   def on_search_entry_changed(self, *args):
     search_value = self.search_entry.get_text()
     self.command_list.set_filter_value(search_value)
-
-  def on_menu_actions_notify(self, *args):
-    self.command_list.set_property('menu-actions', self.menu_actions)
 
 
 class ModalMenu(Gtk.Application):
@@ -194,6 +186,7 @@ class ModalMenu(Gtk.Application):
 
   def add_simple_action(self, name, callback):
     action = Gio.SimpleAction.new(name, None)
+
     action.connect('activate', callback)
     self.add_action(action)
 
@@ -208,8 +201,10 @@ class ModalMenu(Gtk.Application):
 
   def do_activate(self):
     self.window = CommandWindow(application=self, title='gnomeHUD')
-    self.window.set_property('menu-actions', self.dbus_menu.actions)
     self.window.show_all()
+
+    self.commands = self.window.command_list
+    self.commands.set_property('menu-actions', self.dbus_menu.actions)
 
   def on_show_window(self, *args):
     self.window.show()
@@ -219,13 +214,13 @@ class ModalMenu(Gtk.Application):
     self.quit()
 
   def on_prev_command(self, *args):
-    self.window.command_list.select_prev_row()
+    self.commands.select_prev_row()
 
   def on_next_command(self, *args):
-    self.window.command_list.select_next_row()
+    self.commands.select_next_row()
 
   def on_execute_command(self, *args):
-    self.window.command_list.execute_command()
+    self.dbus_menu.activate(self.commands.select_value)
     self.quit()
 
 
