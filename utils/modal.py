@@ -38,47 +38,47 @@ class Command(object):
     self.parts = self.value.split(SEPARATOR)
     self.label = self.parts[-1]
 
-  def score(self, comparable):
+  def score(self, query):
     value = normalize_string(self.value)
     label = normalize_string(self.label)
-    query = normalize_string(comparable)
+    query = normalize_string(query)
     words = query.split(' ')
 
     score = 0
     if label == query:
       return score
 
-    score = score + 1
+    score += 1
     if label.startswith(query):
       return score
 
-    score = score + 1
+    score += 1
     if query in label:
       return score
 
-    score = score + 1
+    score += 1
     if contains_words(label, words):
       return score
 
-    score = score + 1
+    score += 1
     if contains_words(label, words, False):
       return score
 
-    score = score + 1
+    score += 1
     if contains_words(value, words):
       return score
 
-    score = score + 1
+    score += 1
     if contains_words(value, words, False):
       return score
 
     return -1
 
-  def position(self, comparable):
-    return self.score(comparable) if bool(comparable) else 0
+  def position(self, query):
+    return self.score(query) if bool(query) else 0
 
-  def visibility(self, comparable):
-    return self.score(comparable) > -1 if bool(comparable) else True
+  def visibility(self, query):
+    return self.score(query) > -1 if bool(query) else True
 
 
 class CommandListItem(Gtk.ListBoxRow):
