@@ -3,7 +3,9 @@ import dbus
 
 gi.require_version('Bamf', '3')
 
-from gi.repository import Gdk, Gio, Bamf
+from gi.repository import Gdk
+from gi.repository import Gio
+from gi.repository import Bamf
 
 SEPARATOR = u'\u0020\u0020\u00BB\u0020\u0020'
 
