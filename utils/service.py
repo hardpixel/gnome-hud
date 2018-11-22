@@ -9,6 +9,7 @@ from dbus.mainloop.glib import DBusGMainLoop
 service_name = 'com.canonical.AppMenu.Registrar'
 service_path = '/com/canonical/AppMenu/Registrar'
 
+
 class AppMenuService(dbus.service.Object):
   def __init__(self):
     self.window_dict = dict()

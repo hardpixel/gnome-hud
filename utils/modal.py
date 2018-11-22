@@ -13,7 +13,6 @@ from menu import SEPARATOR
 
 def normalize_string(string):
   string = string.replace(SEPARATOR, ' ')
-  string = string.replace('...', ' ')
   string = string.replace('\s+', ' ')
   string = string.strip()
 
@@ -41,9 +40,9 @@ class Command(object):
 
   def score(self, comparable):
     value = normalize_string(self.value)
+    label = normalize_string(self.label)
     query = normalize_string(comparable)
     words = query.split(' ')
-    label = self.label.lower()
 
     score = 0
     if label == query:

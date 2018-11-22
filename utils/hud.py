@@ -10,6 +10,7 @@ from dbus.mainloop.glib import DBusGMainLoop
 from rofi import RofiMenu
 from menu import DbusMenu
 
+
 def hud(_keystr):
   try:
     dbus_menu = DbusMenu()

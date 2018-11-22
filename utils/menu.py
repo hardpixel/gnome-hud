@@ -164,5 +164,7 @@ class DbusMenu:
 
     result = result.replace('Root%s' % SEPARATOR, '')
     result = result.replace('_', '')
+    result = result.replace('...', ' ')
+    result = result.replace('\s+', ' ')
 
     return result.strip()
