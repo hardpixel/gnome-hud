@@ -262,8 +262,3 @@ class ModalMenu(Gtk.Application):
   def on_execute_command(self, *args):
     self.dbus_menu.activate(self.commands.select_value)
     self.quit()
-
-
-if __name__ == '__main__':
-  modal = ModalMenu()
-  modal.run()
