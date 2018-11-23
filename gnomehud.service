@@ -1,9 +1,0 @@
-[Unit]
-Description=Gnome HUD (appmenu)
-
-[Service]
-ExecStart=/usr/bin/gnomehud-service
-Restart=on-abort
-
-[Install]
-WantedBy=graphical.target
