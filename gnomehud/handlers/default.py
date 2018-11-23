@@ -14,6 +14,20 @@ from gnomehud.utils.menu import DbusMenu
 from gnomehud.utils.fuzzy import FuzzyMatch
 
 
+def inject_custom_style(widget, style_string):
+  provider = Gtk.CssProvider()
+  provider.load_from_data(style_string.encode())
+
+  screen   = Gdk.Screen.get_default()
+  priority = Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+  Gtk.StyleContext.add_provider_for_screen(screen, provider, priority)
+
+
+def add_style_class(widget, class_string):
+  context = widget.get_style_context()
+  context.add_class('tiled')
+
+
 class CommandListItem(Gtk.ListBoxRow):
 
   value = GObject.Property(type=str)
@@ -164,11 +178,13 @@ class CommandWindow(Gtk.ApplicationWindow):
     super(Gtk.ApplicationWindow, self).__init__(*args, **kwargs)
 
     self.set_modal(True)
+    self.set_resizable(False)
+
     self.set_position(Gtk.WindowPosition.NONE)
     self.set_custom_position()
 
-    self.set_default_size(800, 210)
-    self.set_size_request(800, 210)
+    self.set_default_size(800, 313)
+    self.set_size_request(800, 313)
 
     self.set_skip_pager_hint(True)
     self.set_skip_taskbar_hint(True)
@@ -179,6 +195,7 @@ class CommandWindow(Gtk.ApplicationWindow):
 
     self.search_entry = Gtk.SearchEntry(hexpand=True, margin=2)
     self.search_entry.connect('search-changed', self.on_search_entry_changed)
+    self.search_entry.set_has_frame(False)
 
     self.scrolled_window = Gtk.ScrolledWindow(hadjustment=None, vadjustment=None)
     self.scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
@@ -191,6 +208,8 @@ class CommandWindow(Gtk.ApplicationWindow):
     self.add(self.scrolled_window)
 
     self.set_dark_variation()
+    self.set_custom_styles()
+
     self.connect('show', self.on_window_show)
 
   def set_custom_position(self):
@@ -200,6 +219,14 @@ class CommandWindow(Gtk.ApplicationWindow):
   def set_dark_variation(self):
     settings = Gtk.Settings.get_default()
     settings.set_property('gtk-application-prefer-dark-theme', True)
+
+  def set_custom_styles(self):
+    styles = """entry.search.flat { border: 0; outline: 0;
+      border-image: none; box-shadow: none; }
+    """
+
+    inject_custom_style(self, styles)
+    add_style_class(self, 'tiled')
 
   def on_window_show(self, window):
     self.search_entry.grab_focus()
