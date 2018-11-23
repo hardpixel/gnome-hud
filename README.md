@@ -30,7 +30,7 @@ To install and enable unity-gtk-module for your distro:
 
 **UBUNTU**
 * Install unity-gtk-module using `sudo apt-get install unity-gtk-module-common unity-gtk2-module unity-gtk3-module`
-* Follow instructions in (appmenu-gtk-module) [README](subprojects/appmenu-gtk-module/README.md), but replace any occurence of `appmenu-gtk-module` to `unity-gtk-module`
+* Follow instructions in [appmenu-gtk-module](https://github.com/rilian-la-te/vala-panel-appmenu/blob/master/subprojects/appmenu-gtk-module/README.md), but replace any occurence of `appmenu-gtk-module` to `unity-gtk-module`
 
 **ARCH LINUX**
 * Install from AUR [appmenu-gtk-module-git](https://aur.archlinux.org/packages/appmenu-gtk-module-git/) for GTK applications to work
