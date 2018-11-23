@@ -243,6 +243,7 @@ class HudMenu(Gtk.Application):
     self.active = self.screen.get_active_window()
 
     self.window = CommandWindow(application=self, title='gnomeHUD')
+    self.window.connect('focus-out-event', self.on_hide_window)
     self.window.show_all()
 
     self.commands = self.window.command_list
@@ -256,7 +257,7 @@ class HudMenu(Gtk.Application):
     self.window.show()
 
   def on_hide_window(self, *args):
-    self.window.hide()
+    self.window.destroy()
     self.quit()
 
   def on_prev_command(self, *args):
@@ -267,4 +268,4 @@ class HudMenu(Gtk.Application):
 
   def on_execute_command(self, *args):
     self.dbus_menu.activate(self.commands.select_value)
-    self.quit()
+    self.on_hide_window()
