@@ -24,25 +24,23 @@ pip install gnome-hud
 ### Post installation
 After the package installation, follow the instructions below:
 
-- Install bamfdaemon. It is strongly recommend to add bamfdaemon to autostart
+- Install bamf daemon (It is strongly recommend to add bamf daemon to autostart)
 - Install GTK module using instructions below
 - To get QT menus to work, install your distribution's qt4 and qt5 appmenu packages
 
-To install and enable unity-gtk-module for your distro:
-
 **UBUNTU**
 
-* Install unity-gtk-module with `sudo apt-get install unity-gtk-module-common unity-gtk2-module unity-gtk3-module`
+* Install [unity-gtk-module](https://launchpad.net/unity-gtk-module) with `sudo apt-get install unity-gtk2-module unity-gtk3-module`
 * Follow instructions in [appmenu-gtk-module](https://github.com/rilian-la-te/vala-panel-appmenu/blob/master/subprojects/appmenu-gtk-module/README.md), but replace any occurence of `appmenu-gtk-module` to `unity-gtk-module`
 
 **ARCH LINUX**
 
-* Install from AUR [appmenu-gtk-module-git](https://aur.archlinux.org/packages/appmenu-gtk-module-git/) for GTK applications to work
-* Install [Appmenu](https://www.archlinux.org/packages/community/x86_64/appmenu-qt4/) to get appmenu for Qt4 Applications to work. Qt 5.7 must work out of the box
-* Install [libdbusmenu-glib](https://archlinux.org/packages/libdbusmenu-glib/), [libdbusmenu-gtk3](https://archlinux.org/packages/libdbusmenu-gtk3/) and [libdbusmenu-gtk2](https://archlinux.org/packages/libdbusmenu-gtk2/) to get Chromium/Google Chrome to work
-* Follow instructions in the [appmenu-gtk-module](https://github.com/rilian-la-te/vala-panel-appmenu/blob/master/subprojects/appmenu-gtk-module/README.md), if it is not enabled automatically
+* Install [appmenu-gtk-module](https://www.archlinux.org/packages/community/x86_64/appmenu-gtk-module) for GTK appmenu support
+* Install [appmenu-qt4](https://www.archlinux.org/packages/community/x86_64/appmenu-qt4) for Qt4 appmenu support
+* Install [libdbusmenu-gtk2](https://www.archlinux.org/packages/community/x86_64/libdbusmenu-gtk2) and [libdbusmenu-gtk3](https://www.archlinux.org/packages/community/x86_64/libdbusmenu-gtk3) for GTK2 and GTK3 dbusmenu support
+* Install [libdbusmenu-qt4](https://www.archlinux.org/packages/extra/x86_64/libdbusmenu-qt4) and [libdbusmenu-qt5](https://www.archlinux.org/packages/extra/x86_64/libdbusmenu-qt5) for Qt4 and Qt5 dbusmenu support
 
-*The post installation instructions above are from [Vala Panel Application Menu](https://github.com/rilian-la-te/vala-panel-appmenu).*
+*The post installation instructions above are adapted from [Vala Panel Application Menu](https://github.com/rilian-la-te/vala-panel-appmenu).*
 
 ### Usage
 After the installation is completed, you will have 3 executables and a gnomehud.desktop file available.
