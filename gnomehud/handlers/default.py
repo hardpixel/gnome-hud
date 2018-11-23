@@ -164,10 +164,11 @@ class CommandWindow(Gtk.ApplicationWindow):
     super(Gtk.ApplicationWindow, self).__init__(*args, **kwargs)
 
     self.set_modal(True)
-    self.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
+    self.set_position(Gtk.WindowPosition.NONE)
+    self.set_custom_position()
 
-    self.set_default_size(640, 250)
-    self.set_size_request(640, 250)
+    self.set_default_size(800, 210)
+    self.set_size_request(800, 210)
 
     self.set_skip_pager_hint(True)
     self.set_skip_taskbar_hint(True)
@@ -191,6 +192,10 @@ class CommandWindow(Gtk.ApplicationWindow):
 
     self.set_dark_variation()
     self.connect('show', self.on_window_show)
+
+  def set_custom_position(self):
+    width = self.get_screen().width()
+    self.move((width - 800) / 2, 10)
 
   def set_dark_variation(self):
     settings = Gtk.Settings.get_default()
@@ -245,6 +250,7 @@ class HudMenu(Gtk.Application):
 
     self.attached = self.window.get_window()
     self.attached.set_transient_for(self.active)
+    self.attached.focus(Gdk.CURRENT_TIME)
 
   def on_show_window(self, *args):
     self.window.show()
