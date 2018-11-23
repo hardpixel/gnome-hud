@@ -59,7 +59,7 @@ When running the dialog commands from a terminal the keybinding is <kbd>Ctrl</kb
 Arch Linux: [AUR package](https://aur.archlinux.org/packages/gnome-hud)
 
 ## Contributing
-Bug reports and pull requests are welcome on GitHub at https://github.com/hardpixel/unite-shell.
+Bug reports and pull requests are welcome on GitHub at https://github.com/hardpixel/gnome-hud.
 
 ## License
 Gnome HUD is available as open source under the terms of the [GPLv3](http://www.gnu.org/licenses/gpl-3.0.en.html)
