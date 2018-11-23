@@ -112,13 +112,13 @@ class RofiMenu:
   def theme_string(self):
     style = """
       #window { location: north; anchor: north; border: 1px;
-        width: 800px; padding: 0; margin: 32px 0 0;}
+        width: 800px; padding: 0; margin: 32px 0 0; }
 
       #listview { border: 1px 0 0; spacing: 0;
-        scrollbar: false; padding: 0; lines: 6;}
+        scrollbar: false; padding: 0; lines: 6; }
 
-      #inputbar { padding: 10px;}
-      #element  { border: 0; padding: 6px 10px;}
+      #inputbar { padding: 10px; }
+      #element { border: 0; padding: 6px 10px; }
     """
 
     return style
