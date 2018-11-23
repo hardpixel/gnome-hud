@@ -112,7 +112,7 @@ class RofiMenu:
   def theme_string(self):
     style = """
       #window { location: north; anchor: north; border: 1px;
-        width: 800px; padding: 0; margin: 32px 0 0; }
+        width: 750px; padding: 0; margin: 32px 0 0; }
 
       #listview { border: 1px 0 0; spacing: 0;
         scrollbar: false; padding: 0; lines: 6; }
