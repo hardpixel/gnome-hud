@@ -14,7 +14,7 @@ setuptools.setup(
   url='https://github.com/hardpixel/gnome-hud',
   packages=setuptools.find_packages(),
   data_files=[
-    ('lib/systemd/system', ['gnomehud.service'])
+    ('lib/systemd/system', ['gnomehud.service']),
     ('share/applications', ['gnomehud.desktop', 'gnomehud-rofi.desktop'])
   ],
   install_requires=[
