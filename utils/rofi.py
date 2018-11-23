@@ -23,7 +23,7 @@ class RofiMenu:
 
     return selection
 
-  def open(self):
+  def run(self):
     self.dbus.activate(self.selection)
 
   def rgba_to_hex(self, color):

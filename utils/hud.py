@@ -11,7 +11,7 @@ from rofi import RofiMenu
 
 def hud(_keystr):
   rofi_menu = RofiMenu()
-  rofi_menu.open()
+  rofi_menu.run()
 
 
 if __name__ == "__main__":
