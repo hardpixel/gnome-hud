@@ -22,7 +22,7 @@ class RofiMenu:
 
   def __init__(self):
     self.settings  = Gtk.Settings.get_default()
-    self.context   = Gtk.Window().get_style_context()
+    self.context   = Gtk.StyleContext()
     self.dbus_menu = DbusMenu()
 
     self.settings.set_property('gtk-application-prefer-dark-theme', True)
@@ -63,11 +63,13 @@ class RofiMenu:
       'fg':           self.lookup_color('theme_fg_color'),
       'selected_bg':  self.lookup_color('theme_selected_bg_color'),
       'selected_fg':  self.lookup_color('theme_selected_fg_color'),
+      'selected_br':  self.lookup_color('theme_selected_border_color'),
       'error_bg':     self.lookup_color('error_bg_color'),
       'error_fg':     self.lookup_color('error_fg_color'),
       'info_bg':      self.lookup_color('info_bg_color'),
       'unfocused_fg': self.lookup_color('theme_unfocused_fg_color'),
-      'unfocused_bg': self.lookup_color('theme_unfocused_bg_color')
+      'unfocused_bg': self.lookup_color('theme_unfocused_bg_color'),
+      'unfocused_br': self.lookup_color('theme_unfocused_border_color')
     }
 
     for name, color in colors.items():
@@ -75,15 +77,14 @@ class RofiMenu:
 
     return colors
 
-
   @property
 
   def theme_colors(self):
     colors = {
       'window': [
         self.gtk_theme_colors['bg'],
-        self.gtk_theme_colors['unfocused_fg'],
-        self.gtk_theme_colors['unfocused_fg']
+        self.gtk_theme_colors['selected_br'],
+        self.gtk_theme_colors['unfocused_br']
       ],
       'normal': [
         self.gtk_theme_colors['bg'],
@@ -106,21 +107,31 @@ class RofiMenu:
 
     return colors
 
+  @property
+
+  def theme_string(self):
+    style = """
+      #window { location: north; anchor: north; border: 1px;
+        width: 800px; padding: 0; margin: 32px 0 0;}
+
+      #listview { border: 1px 0 0; spacing: 0;
+        scrollbar: false; padding: 0; lines: 6;}
+
+      #inputbar { padding: 10px;}
+      #element  { border: 0; padding: 6px 10px;}
+    """
+
+    return style
+
   def lookup_color(self, key):
     return self.context.lookup_color(key)[1]
 
   def open_menu(self):
-    settings = [
+    options = [
       'rofi',
       '-i',
       '-dmenu',
-      '-hide-scrollbar',
-      '-color-enabled',
-      '-lines', '6',
-      '-location', '2',
-      '-yoffset', '32',
-      '-width', '800',
-      '-bw', '0',
+      '-theme-str', self.theme_string,
       '-p', self.prompt,
       '-font', self.font_name,
       '-color-window', self.theme_colors['window'],
@@ -128,7 +139,7 @@ class RofiMenu:
       '-color-urgent', self.theme_colors['urgent']
     ]
 
-    self.menu_proc = Popen(settings, stdout=PIPE, stdin=PIPE)
+    self.menu_proc = Popen(options, stdout=PIPE, stdin=PIPE)
     self.menu_proc.stdin.write(self.items)
 
   def run(self):
