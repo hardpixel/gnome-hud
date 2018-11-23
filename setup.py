@@ -17,7 +17,8 @@ setuptools.setup(
     ('share/applications', ['gnomehud.desktop', 'gnomehud-rofi.desktop'])
   ],
   install_requires=[
-    'PyGObject>=3.30.0'
+    'PyGObject>=3.30.0',
+    'dbus-python>=1.2.8'
   ],
   classifiers=[
     'Programming Language :: Python :: 3',
