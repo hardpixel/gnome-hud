@@ -163,14 +163,15 @@ class CommandWindow(Gtk.ApplicationWindow):
   def __init__(self, *args, **kwargs):
     super(Gtk.ApplicationWindow, self).__init__(*args, **kwargs)
 
-    self.skip_taskbar_hint   = True
-    self.destroy_with_parent = True
-    self.modal               = True
-    self.window_position     = Gtk.WindowPosition.CENTER_ON_PARENT
-    self.type_hint           = Gdk.WindowTypeHint.DIALOG
+    self.set_modal(True)
+    self.set_position(Gtk.WindowPosition.CENTER_ON_PARENT)
 
     self.set_default_size(640, 250)
     self.set_size_request(640, 250)
+
+    self.set_skip_pager_hint(True)
+    self.set_skip_taskbar_hint(True)
+    self.set_destroy_with_parent(True)
 
     self.command_list = CommandList()
     self.command_list.invalidate_selection()
@@ -233,11 +234,17 @@ class ModalMenu(Gtk.Application):
     self.add_simple_action('execute', self.on_execute_command)
 
   def do_activate(self):
+    self.screen = Gdk.Screen.get_default()
+    self.active = self.screen.get_active_window()
+
     self.window = CommandWindow(application=self, title='gnomeHUD')
     self.window.show_all()
 
     self.commands = self.window.command_list
     self.commands.set_property('menu-actions', self.dbus_menu.actions)
+
+    self.attached = self.window.get_window()
+    self.attached.set_transient_for(self.active)
 
   def on_show_window(self, *args):
     self.window.show()
