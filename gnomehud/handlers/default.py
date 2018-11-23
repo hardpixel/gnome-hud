@@ -14,6 +14,13 @@ from gnomehud.utils.menu import DbusMenu
 from gnomehud.utils.fuzzy import FuzzyMatch
 
 
+def run_generator(function):
+  priority  = GLib.PRIORITY_LOW
+  generator = function()
+
+  GLib.idle_add(lambda: next(generator, False), priority=priority)
+
+
 def inject_custom_style(widget, style_string):
   provider = Gtk.CssProvider()
   provider.load_from_data(style_string.encode())
@@ -159,17 +166,20 @@ class CommandList(Gtk.ListBox):
     visible = item.visibility(self.filter_value)
     return self.append_visible_row(item, visible)
 
+  def do_list_items(self):
+    for index, value in enumerate(self.menu_actions):
+      command = CommandListItem(value=value, index=index)
+      self.add(command)
+      yield True
+
+    self.invalidate_selection()
+
   def on_row_selected(self, listbox, item):
     self.select_value = item.value if item else ''
 
   def on_menu_actions_notify(self, *args):
     self.foreach(lambda item: item.destroy())
-
-    for index, value in enumerate(self.menu_actions):
-      command = CommandListItem(value=value, index=index)
-      self.add(command)
-
-    self.invalidate_selection()
+    run_generator(self.do_list_items)
 
 
 class CommandWindow(Gtk.ApplicationWindow):
