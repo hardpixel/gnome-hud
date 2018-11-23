@@ -193,8 +193,8 @@ class CommandWindow(Gtk.ApplicationWindow):
     self.set_position(Gtk.WindowPosition.NONE)
     self.set_custom_position()
 
-    self.set_default_size(800, 313)
-    self.set_size_request(800, 313)
+    self.set_default_size(800, 309)
+    self.set_size_request(800, 309)
 
     self.set_skip_pager_hint(True)
     self.set_skip_taskbar_hint(True)
