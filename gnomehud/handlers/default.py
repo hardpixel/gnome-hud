@@ -312,5 +312,5 @@ class HudMenu(Gtk.Application):
       self.on_execute_command()
 
   def on_execute_command(self, *args):
-    self.dbus_menu.activate(self.commands.select_value)
     self.on_hide_window()
+    self.dbus_menu.activate(self.commands.select_value)
