@@ -5,18 +5,17 @@ import gi
 gi.require_version('Keybinder', '3.0')
 
 from gi.repository import Keybinder, GLib
+from utils.rofi import RofiMenu
 
-from rofi import RofiMenu
 
-
-def hud(_keystr):
+def hud_menu(_keystr):
   rofi_menu = RofiMenu()
   rofi_menu.run()
 
 
 if __name__ == "__main__":
   Keybinder.init()
-  Keybinder.bind('<Ctrl><Alt>space', hud)
+  Keybinder.bind('<Ctrl><Alt>space', hud_menu)
 
   try:
     GLib.MainLoop().run()
