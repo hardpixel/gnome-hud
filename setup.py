@@ -4,7 +4,7 @@ with open('README.md', 'r') as fh:
   long_description = fh.read()
 
 setuptools.setup(
-  name='gnomehud',
+  name='gnome-hud',
   version='1.0.0',
   author='Jonian Guveli',
   author_email='jonian@hardpixel.eu',
