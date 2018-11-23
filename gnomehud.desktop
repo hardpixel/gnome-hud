@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Name=Gnome HUD
+GenericName=Menu Searcher
+Comment=Search active window menus
+Exec=gnomehud
+TryExec=gnomehud
+Icon=search
+Terminal=false
+Type=Application
+NoDisplay=true

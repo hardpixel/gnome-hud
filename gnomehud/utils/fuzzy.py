@@ -1,6 +1,6 @@
 import re
 
-from utils.menu import SEPARATOR
+from gnomehud.utils.menu import SEPARATOR
 
 
 def normalize_string(string):

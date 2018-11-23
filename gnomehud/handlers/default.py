@@ -10,8 +10,8 @@ from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import GObject
 
-from utils.menu import DbusMenu
-from utils.fuzzy import FuzzyMatch
+from gnomehud.utils.menu import DbusMenu
+from gnomehud.utils.fuzzy import FuzzyMatch
 
 
 class CommandListItem(Gtk.ListBoxRow):
@@ -204,7 +204,7 @@ class CommandWindow(Gtk.ApplicationWindow):
     self.command_list.set_filter_value(search_value)
 
 
-class ModalMenu(Gtk.Application):
+class HudMenu(Gtk.Application):
 
   def __init__(self, *args, **kwargs):
     kwargs['application_id'] = 'org.hardpixel.gnomeHUD'

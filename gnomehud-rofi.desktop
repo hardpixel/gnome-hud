@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Name=Gnome HUD Rofi
+GenericName=Menu Searcher
+Comment=Search active window menus in rofi launcher
+Exec=gnomehud-rofi
+TryExec=gnomehud-rofi
+Icon=search
+Terminal=false
+Type=Application
+NoDisplay=true

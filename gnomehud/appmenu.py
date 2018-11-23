@@ -2,10 +2,10 @@
 
 from gi.repository import GLib
 from dbus.mainloop.glib import DBusGMainLoop
-from utils.service import AppMenuService
+from gnomehud.utils.service import AppMenuService
 
 
-if __name__ == "__main__":
+def main():
   DBusGMainLoop(set_as_default=True)
   AppMenuService()
 
@@ -13,3 +13,7 @@ if __name__ == "__main__":
     GLib.MainLoop().run()
   except KeyboardInterrupt:
     GLib.MainLoop().quit()
+
+
+if __name__ == "__main__":
+  main()
