@@ -4,7 +4,7 @@ import subprocess
 gi.require_version('Gtk', '3.0')
 
 from gi.repository import Gtk
-from menu import DbusMenu
+from utils.menu import DbusMenu
 
 
 class RofiMenu:

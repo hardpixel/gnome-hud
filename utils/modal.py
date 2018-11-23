@@ -10,8 +10,8 @@ from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import GObject
 
-from menu import DbusMenu
-from fuzzy import FuzzyMatch
+from utils.menu import DbusMenu
+from utils.fuzzy import FuzzyMatch
 
 
 class CommandListItem(Gtk.ListBoxRow):

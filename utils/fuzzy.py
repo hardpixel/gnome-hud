@@ -1,6 +1,6 @@
 import re
 
-from menu import SEPARATOR
+from utils.menu import SEPARATOR
 
 
 def normalize_string(string):
