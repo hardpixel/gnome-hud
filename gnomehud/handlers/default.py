@@ -248,6 +248,7 @@ class HudMenu(Gtk.Application):
 
     self.commands = self.window.command_list
     self.commands.set_property('menu-actions', self.dbus_menu.actions)
+    self.commands.connect_after('button-press-event', self.on_commands_click)
 
     self.attached = self.window.get_window()
     self.attached.set_transient_for(self.active)
@@ -265,6 +266,10 @@ class HudMenu(Gtk.Application):
 
   def on_next_command(self, *args):
     self.commands.select_next_row()
+
+  def on_commands_click(self, widget, event):
+    if event.type == Gdk.EventType._2BUTTON_PRESS:
+      self.on_execute_command()
 
   def on_execute_command(self, *args):
     self.dbus_menu.activate(self.commands.select_value)
