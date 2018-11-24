@@ -59,17 +59,14 @@ class RofiMenu:
 
   def gtk_theme_colors(self):
     colors = {
-      'bg':           self.lookup_color('theme_bg_color'),
-      'fg':           self.lookup_color('theme_fg_color'),
-      'selected_bg':  self.lookup_color('theme_selected_bg_color'),
-      'selected_fg':  self.lookup_color('theme_selected_fg_color'),
-      'selected_br':  self.lookup_color('theme_selected_border_color'),
-      'error_bg':     self.lookup_color('error_bg_color'),
-      'error_fg':     self.lookup_color('error_fg_color'),
-      'info_bg':      self.lookup_color('info_bg_color'),
-      'unfocused_fg': self.lookup_color('theme_unfocused_fg_color'),
-      'unfocused_bg': self.lookup_color('theme_unfocused_bg_color'),
-      'unfocused_br': self.lookup_color('theme_unfocused_border_color')
+      'header':      self.lookup_color('insensitive_bg_color'),
+      'base':        self.lookup_color('theme_base_color'),
+      'text':        self.lookup_color('theme_text_color'),
+      'borders':     self.lookup_color('borders'),
+      'selected_bg': self.lookup_color('theme_selected_bg_color'),
+      'selected_fg': self.lookup_color('theme_selected_fg_color'),
+      'error_bg':    self.lookup_color('error_bg_color'),
+      'error_fg':    self.lookup_color('error_fg_color')
     }
 
     for name, color in colors.items():
@@ -82,21 +79,21 @@ class RofiMenu:
   def theme_colors(self):
     colors = {
       'window': [
-        self.gtk_theme_colors['bg'],
-        self.gtk_theme_colors['selected_br'],
-        self.gtk_theme_colors['unfocused_br']
+        self.gtk_theme_colors['header'],
+        self.gtk_theme_colors['borders'],
+        self.gtk_theme_colors['borders']
       ],
       'normal': [
-        self.gtk_theme_colors['bg'],
-        self.gtk_theme_colors['fg'],
-        self.gtk_theme_colors['bg'],
+        self.gtk_theme_colors['base'],
+        self.gtk_theme_colors['text'],
+        self.gtk_theme_colors['base'],
         self.gtk_theme_colors['selected_bg'],
         self.gtk_theme_colors['selected_fg']
       ],
       'urgent': [
-        self.gtk_theme_colors['bg'],
-        self.gtk_theme_colors['fg'],
-        self.gtk_theme_colors['bg'],
+        self.gtk_theme_colors['base'],
+        self.gtk_theme_colors['text'],
+        self.gtk_theme_colors['base'],
         self.gtk_theme_colors['error_bg'],
         self.gtk_theme_colors['error_fg']
       ]
@@ -114,11 +111,14 @@ class RofiMenu:
       #window { location: north; anchor: north; border: 1px;
         width: 750px; padding: 0; margin: 32px 0 0; }
 
-      #listview { border: 1px 0 0; spacing: 0;
-        scrollbar: false; padding: 0; lines: 6; }
+      #mainbox { spacing: 0; children: [inputbar, listview]; }
 
-      #inputbar { padding: 10px; }
-      #element { border: 0; padding: 6px 10px; }
+      #listview { border: 1px 0 0; spacing: 0; scrollbar: false;
+        padding: 0; lines: 6; background-color: @normal-background; }
+
+      #inputbar { padding: 14px 12px; }
+      #element { border: 0; padding: 8px 12px; }
+      #textbox-prompt-colon { str: ""; }
     """
 
     return style
@@ -132,7 +132,7 @@ class RofiMenu:
       '-i',
       '-dmenu',
       '-theme-str', self.theme_string,
-      '-p', self.prompt,
+      '-p', '⚙',
       '-font', self.font_name,
       '-color-window', self.theme_colors['window'],
       '-color-normal', self.theme_colors['normal'],

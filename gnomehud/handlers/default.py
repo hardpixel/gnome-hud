@@ -84,7 +84,7 @@ class CommandListItem(Gtk.ListBoxRow):
     self.label.set_markup(normalize_label(value))
 
   def format_matched_string(self, match):
-    return '<u>%s</u>' % match.group(0)
+    return '<u><b>%s</b></u>' % match.group(0)
 
   def do_label_markup(self):
     if bool(self.query):
