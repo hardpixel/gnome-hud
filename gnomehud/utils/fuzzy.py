@@ -1,7 +1,6 @@
 import re
 
 from fuzzysearch import find_near_matches
-from gnomehud.utils.menu import SEPARATOR
 
 
 def match_replace(pattern, replacement, text):
@@ -30,22 +29,16 @@ def contains_words(text, words, require_all=True):
 class FuzzyMatch(object):
 
   def __init__(self, text):
-    self.value = text
-    self.parts = self.value.split(SEPARATOR)
-    self.label = self.parts[-1]
-    self.vpath = ' '.join(self.parts)
-
-    self.label = normalize_string(self.label)
-    self.vpath = normalize_string(self.vpath)
+    self.value = normalize_string(text)
 
   def score(self, query):
     query = normalize_string(query)
     words = query.split(' ')
 
-    if not contains_words(self.vpath, words):
+    if not contains_words(self.value, words):
       return -1
 
-    fuzzy = find_near_matches(query, self.vpath, max_l_dist=1)
+    fuzzy = find_near_matches(query, self.value, max_l_dist=1)
     score = sum(map(lambda m: m.dist, fuzzy))
 
     return score

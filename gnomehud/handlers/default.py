@@ -99,7 +99,8 @@ class CommandListItem(Gtk.ListBoxRow):
   def do_label_markup(self):
     if bool(self.query):
       self.highlight_matches()
-    else:
+
+    elif '<u>' in self.get_label():
       self.set_label(self.value)
 
   def on_query_notify(self, *args):
@@ -328,5 +329,7 @@ class HudMenu(Gtk.Application):
 
   def on_execute_command(self, *args):
     self.attached.set_keep_below(True)
+    self.attached.destroy()
+
     self.dbus_menu.activate(self.commands.select_value)
     self.on_hide_window()
