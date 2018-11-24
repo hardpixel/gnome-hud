@@ -108,6 +108,7 @@ class CommandList(Gtk.ListBox):
     self.menu_actions = self.get_property('menu-actions')
     self.select_value = ''
     self.filter_value = ''
+    self.filter_busy  = False
     self.visible_rows = []
     self.selected_row = 0
     self.selected_obj = None
@@ -119,9 +120,14 @@ class CommandList(Gtk.ListBox):
     self.connect('notify::menu-actions', self.on_menu_actions_notify)
 
   def set_filter_value(self, value=None):
-    self.visible_rows = []
-    self.filter_value = value
+    if not self.filter_busy:
+      self.filter_busy  = True
+      self.visible_rows = []
+      self.filter_value = value
 
+      GLib.idle_add(self.invalidate_filter_value)
+
+  def invalidate_filter_value(self):
     self.invalidate_sort()
     self.invalidate_filter()
 
@@ -129,6 +135,7 @@ class CommandList(Gtk.ListBox):
 
   def invalidate_selection(self):
     self.select_row_by_index(0)
+    self.filter_busy = False
 
   def reset_selection_state(self, index):
     if index == 0:
@@ -171,7 +178,6 @@ class CommandList(Gtk.ListBox):
     for index, value in enumerate(self.menu_actions):
       self.do_list_item(value, index)
       self.reset_selection_state(index)
-
       yield True
 
   def on_row_selected(self, listbox, item):
