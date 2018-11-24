@@ -1,3 +1,4 @@
+from fuzzysearch import find_near_matches
 from gnomehud.utils.menu import SEPARATOR
 
 
@@ -32,32 +33,10 @@ class FuzzyMatch(object):
     query = normalize_string(query)
     words = query.split(' ')
 
-    score = 0
-    if self.label == query:
-      return score
+    if not contains_words(self.vpath, words):
+      return -1
 
-    score += 1
-    if self.label.startswith(query):
-      return score
+    fuzzy = find_near_matches(query, self.vpath, max_l_dist=1)
+    score = sum(map(lambda m: m.dist, fuzzy))
 
-    score += 1
-    if query in self.label:
-      return score
-
-    score += 1
-    if contains_words(self.label, words):
-      return score
-
-    score += 1
-    if contains_words(self.label, words, False):
-      return score
-
-    score += 1
-    if contains_words(self.vpath, words):
-      return score
-
-    score += 1
-    if contains_words(self.vpath, words, False):
-      return score
-
-    return -1
+    return score

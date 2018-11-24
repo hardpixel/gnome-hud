@@ -68,7 +68,7 @@ class CommandListItem(Gtk.ListBoxRow):
     self.show_all()
 
   def position(self, query):
-    return self.fuzzy.score(query) if bool(query) else 0
+    return self.fuzzy.score(query) if bool(query) else -1
 
   def visibility(self, query):
     self.visible = self.fuzzy.score(query) > -1 if bool(query) else True
@@ -122,8 +122,8 @@ class CommandList(Gtk.ListBox):
     self.visible_rows = []
     self.filter_value = value
 
-    self.invalidate_filter()
     self.invalidate_sort()
+    self.invalidate_filter()
 
     GLib.idle_add(self.invalidate_selection)
 
@@ -153,14 +153,11 @@ class CommandList(Gtk.ListBox):
   def select_next_row(self):
     self.select_row_by_index(self.selected_row + 1)
 
-  def sort_function(self, prev_item, next_item):
-    prev_score = prev_item.position(self.filter_value)
-    next_score = next_item.position(self.filter_value)
+  def sort_function(self, row1, row2):
+    row1_score = row1.position(self.filter_value)
+    row2_score = row2.position(self.filter_value)
 
-    score_diff = prev_score - next_score
-    index_diff = prev_item.index - next_item.index
-
-    return index_diff if score_diff == 0 else index_diff
+    return row1_score - row2_score or row1.index - row2.index
 
   def filter_function(self, item):
     visible = item.visibility(self.filter_value)

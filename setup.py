@@ -17,7 +17,8 @@ setuptools.setup(
     ('share/applications', ['gnomehud.desktop'])
   ],
   install_requires=[
-    'PyGObject>=3.30.0'
+    'PyGObject>=3.30.0',
+    'fuzzysearch>=0.5.0'
   ],
   classifiers=[
     'Programming Language :: Python :: 3',
