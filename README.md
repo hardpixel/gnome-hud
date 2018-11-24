@@ -42,7 +42,10 @@ After the package installation, follow the instructions below:
 
 *The post installation instructions above are adapted from [Vala Panel Application Menu](https://github.com/rilian-la-te/vala-panel-appmenu).*
 
-### Usage
+### Packages
+Arch Linux: [AUR package](https://aur.archlinux.org/packages/gnome-hud)
+
+## Usage
 After the installation is completed, you will have 3 executables and a gnomehud.desktop file available.
 
 * Open the GTK3 menu dialog with `gnomehud`
@@ -52,9 +55,6 @@ After the installation is completed, you will have 3 executables and a gnomehud.
 The desktop file launches `gnomehud-service` and can be used to add it to the startup applications in gnome-tweaks. The dialog commands can be used for custom keyboard shortcuts in keyboard settings.
 
 When running the dialog commands from a terminal the keybinding is <kbd>Ctrl</kbd> + <kbd>Alt</kbd> + <kbd>Space</kbd>.
-
-### Packages
-Arch Linux: [AUR package](https://aur.archlinux.org/packages/gnome-hud)
 
 ## Contributing
 Bug reports and pull requests are welcome on GitHub at https://github.com/hardpixel/gnome-hud.
