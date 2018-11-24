@@ -128,15 +128,7 @@ class CommandList(Gtk.ListBox):
     GLib.idle_add(self.invalidate_selection)
 
   def invalidate_selection(self):
-    adjust = self.get_adjustment()
-
-    self.reset_scroll_position(adjust)
     self.select_row_by_index(0)
-
-  def reset_scroll_position(self, adjustment):
-    if adjustment:
-      adjustment.set_value(0)
-      return True
 
   def reset_selection_state(self, index):
     if index == 0:
@@ -254,7 +246,9 @@ class CommandWindow(Gtk.ApplicationWindow):
 
   def on_search_entry_changed(self, *args):
     search_value = self.search_entry.get_text()
+
     self.command_list.set_filter_value(search_value)
+    self.scrolled_window.unset_placement()
 
 
 class HudMenu(Gtk.Application):
