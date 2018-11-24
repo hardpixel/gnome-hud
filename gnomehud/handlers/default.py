@@ -138,6 +138,11 @@ class CommandList(Gtk.ListBox):
       adjustment.set_value(0)
       return True
 
+  def reset_selection_state(self, index):
+    if index == 0:
+      self.invalidate_selection()
+      return True
+
   def append_visible_row(self, row, visibility):
     if visibility:
       self.visible_rows.append(row)
@@ -169,13 +174,16 @@ class CommandList(Gtk.ListBox):
     visible = item.visibility(self.filter_value)
     return self.append_visible_row(item, visible)
 
+  def do_list_item(self, value, index):
+    command = CommandListItem(value=value, index=index)
+    self.add(command)
+
   def do_list_items(self):
     for index, value in enumerate(self.menu_actions):
-      command = CommandListItem(value=value, index=index)
-      self.add(command)
-      yield True
+      self.do_list_item(value, index)
+      self.reset_selection_state(index)
 
-    self.invalidate_selection()
+      yield True
 
   def on_row_selected(self, listbox, item):
     self.select_value = item.value if item else ''
