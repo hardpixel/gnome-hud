@@ -247,8 +247,8 @@ class CommandWindow(Gtk.ApplicationWindow):
   def on_search_entry_changed(self, *args):
     search_value = self.search_entry.get_text()
 
-    self.command_list.set_filter_value(search_value)
     self.scrolled_window.unset_placement()
+    self.command_list.set_filter_value(search_value)
 
 
 class HudMenu(Gtk.Application):
@@ -284,7 +284,7 @@ class HudMenu(Gtk.Application):
     self.screen = Gdk.Screen.get_default()
     self.active = self.screen.get_active_window()
 
-    self.window = CommandWindow(application=self, title='gnomeHUD')
+    self.window = CommandWindow(application=self, title='Gnome HUD')
     self.window.connect('focus-out-event', self.on_hide_window)
     self.window.show_all()
 
