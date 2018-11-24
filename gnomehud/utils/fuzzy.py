@@ -1,23 +1,20 @@
-import re
-
 from gnomehud.utils.menu import SEPARATOR
 
 
 def normalize_string(string):
-  string = string.replace(SEPARATOR, ' ')
-  string = string.replace('\s+', ' ')
-  string = string.strip()
-
+  string = string.replace('[^\w]', '')
   return string.lower()
 
 
-def matched_words(text, words):
-  pattern = re.compile('|'.join(words), re.IGNORECASE)
-  return pattern.findall(text)
+def contains_words(text, words, require_all=True):
+  for word in words:
+    if word in text:
+      if not require_all:
+        return True
+    elif require_all:
+      return False
 
-
-def contains_matches(matches, words=None):
-  return len(matches) == len(words) if words else len(matches)
+  return require_all
 
 
 class FuzzyMatch(object):
@@ -25,7 +22,7 @@ class FuzzyMatch(object):
   def __init__(self, text):
     self.value = text
     self.parts = self.value.split(SEPARATOR)
-    self.label = self.parts.pop(-1)
+    self.label = self.parts[-1]
     self.vpath = ' '.join(self.parts)
 
     self.label = normalize_string(self.label)
@@ -47,24 +44,20 @@ class FuzzyMatch(object):
     if query in self.label:
       return score
 
-    matches = matched_words(self.label, words)
-
     score += 1
-    if contains_matches(matches, words):
+    if contains_words(self.label, words):
       return score
 
     score += 1
-    if contains_matches(matches):
-      return score
-
-    matches = matched_words(self.vpath, words)
-
-    score += 1
-    if contains_matches(matches, words):
+    if contains_words(self.label, words, False):
       return score
 
     score += 1
-    if contains_matches(matches):
+    if contains_words(self.vpath, words):
+      return score
+
+    score += 1
+    if contains_words(self.vpath, words, False):
       return score
 
     return -1
