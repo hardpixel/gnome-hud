@@ -1,4 +1,3 @@
-import re
 import gi
 
 gi.require_version('Gtk', '3.0')
@@ -12,9 +11,11 @@ from gi.repository import GObject
 
 from gnomehud.utils.menu import DbusMenu
 from gnomehud.utils.fuzzy import FuzzyMatch
+from gnomehud.utils.fuzzy import normalize_string
+from gnomehud.utils.fuzzy import match_replace
 
 
-def normalize_label(text):
+def normalize_markup(text):
   return text.replace('&', '&amp;')
 
 
@@ -60,12 +61,22 @@ class CommandListItem(Gtk.ListBoxRow):
     self.label = Gtk.Label(margin=6, margin_left=10, margin_right=10)
     self.label.set_justify(Gtk.Justification.LEFT)
     self.label.set_halign(Gtk.Align.START)
-    self.label.set_label(normalize_label(self.value))
 
     self.connect('notify::query', self.on_query_notify)
 
     self.add(self.label)
+    self.set_label(self.value)
+
     self.show_all()
+
+  def get_label(self):
+    return self.label.get_label()
+
+  def set_label(self, text):
+    self.label.set_label(normalize_markup(text))
+
+  def set_markup(self, markup):
+    self.label.set_markup(normalize_markup(markup))
 
   def position(self, query):
     return self.fuzzy.score(query) if bool(query) else -1
@@ -76,22 +87,20 @@ class CommandListItem(Gtk.ListBoxRow):
 
     return self.visible
 
-  def underline_matches(self):
-    words = self.query.replace(' ', '|')
-    regex = re.compile(words, re.IGNORECASE)
-    value = regex.sub(self.format_matched_string, self.value)
-
-    self.label.set_markup(normalize_label(value))
-
-  def format_matched_string(self, match):
+  def highlight_match(self, match):
     return '<u><b>%s</b></u>' % match.group(0)
+
+  def highlight_matches(self):
+    words = self.query.replace(' ', '|')
+    value = match_replace(words, self.highlight_match, self.value)
+
+    self.set_markup(value)
 
   def do_label_markup(self):
     if bool(self.query):
-      self.underline_matches()
-
-    elif '<u>' in self.label.get_label():
-      self.label.set_label(normalize_label(self.value))
+      self.highlight_matches()
+    else:
+      self.set_label(self.value)
 
   def on_query_notify(self, *args):
     if self.visible:
@@ -249,9 +258,10 @@ class CommandWindow(Gtk.ApplicationWindow):
 
   def on_search_entry_changed(self, *args):
     search_value = self.search_entry.get_text()
+    search_value = normalize_string(search_value.strip())
 
     self.scrolled_window.unset_placement()
-    self.command_list.set_filter_value(search_value.strip())
+    self.command_list.set_filter_value(search_value)
 
 
 class HudMenu(Gtk.Application):

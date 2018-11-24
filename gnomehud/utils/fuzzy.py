@@ -1,10 +1,19 @@
+import re
+
 from fuzzysearch import find_near_matches
 from gnomehud.utils.menu import SEPARATOR
 
 
+def match_replace(pattern, replacement, text):
+  regex = re.compile(pattern, re.IGNORECASE)
+  return regex.sub(replacement, text)
+
+
 def normalize_string(string):
-  string = string.replace('[^\w]', '')
-  return string.lower()
+  string = match_replace('[^\w]', ' ', string)
+  string = match_replace('\s+', ' ', string)
+
+  return string.lower().strip()
 
 
 def contains_words(text, words, require_all=True):
