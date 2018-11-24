@@ -251,7 +251,7 @@ class CommandWindow(Gtk.ApplicationWindow):
     search_value = self.search_entry.get_text()
 
     self.scrolled_window.unset_placement()
-    self.command_list.set_filter_value(search_value)
+    self.command_list.set_filter_value(search_value.strip())
 
 
 class HudMenu(Gtk.Application):
