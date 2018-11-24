@@ -5,7 +5,7 @@ with open('README.md', 'r') as fh:
 
 setuptools.setup(
   name='gnome-hud',
-  version='1.1.1',
+  version='1.2.0',
   author='Jonian Guveli',
   author_email='jonian@hardpixel.eu',
   description='Unity like HUD menu for the GNOME Desktop Environment',
