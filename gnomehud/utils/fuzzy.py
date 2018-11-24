@@ -29,9 +29,16 @@ def contains_words(text, words, require_all=True):
 class FuzzyMatch(object):
 
   def __init__(self, text):
+    self.score = -1
+    self.query = ''
     self.value = normalize_string(text)
 
-  def score(self, query):
+  def set_query(self, query):
+    if bool(query) and query != self.query:
+      self.query = query
+      self.score = self.get_score(query)
+
+  def get_score(self, query):
     query = normalize_string(query)
     words = query.split(' ')
 

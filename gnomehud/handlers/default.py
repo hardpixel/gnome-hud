@@ -49,8 +49,6 @@ class CommandListItem(Gtk.ListBoxRow):
   def __init__(self, *args, **kwargs):
     super(Gtk.ListBoxRow, self).__init__(*args, **kwargs)
 
-    self.visible = True
-
     self.set_can_focus(False)
 
     self.query = self.get_property('query')
@@ -78,14 +76,11 @@ class CommandListItem(Gtk.ListBoxRow):
   def set_markup(self, markup):
     self.label.set_markup(normalize_markup(markup))
 
-  def position(self, query):
-    return self.fuzzy.score(query) if bool(query) else -1
+  def position(self):
+    return self.fuzzy.score if bool(self.query) else -1
 
-  def visibility(self, query):
-    self.visible = self.fuzzy.score(query) > -1 if bool(query) else True
-    self.set_property('query', query)
-
-    return self.visible
+  def visibility(self):
+    return self.fuzzy.score > -1 if bool(self.query) else True
 
   def highlight_match(self, match):
     return '<u><b>%s</b></u>' % match.group(0)
@@ -104,8 +99,10 @@ class CommandListItem(Gtk.ListBoxRow):
       self.set_label(self.value)
 
   def on_query_notify(self, *args):
-    if self.visible:
-      GLib.idle_add(self.do_label_markup)
+    self.fuzzy.set_query(self.query)
+
+    if self.visibility():
+      GLib.idle_add(self.do_label_markup, priority=GLib.PRIORITY_HIGH_IDLE)
 
 
 class CommandList(Gtk.ListBox):
@@ -118,7 +115,6 @@ class CommandList(Gtk.ListBox):
     self.menu_actions = self.get_property('menu-actions')
     self.select_value = ''
     self.filter_value = ''
-    self.filter_busy  = False
     self.visible_rows = []
     self.selected_row = 0
     self.selected_obj = None
@@ -130,22 +126,19 @@ class CommandList(Gtk.ListBox):
     self.connect('notify::menu-actions', self.on_menu_actions_notify)
 
   def set_filter_value(self, value=None):
-    if not self.filter_busy:
-      self.filter_busy  = True
-      self.visible_rows = []
-      self.filter_value = value
+    self.visible_rows = []
+    self.filter_value = normalize_string(value)
 
-      GLib.idle_add(self.invalidate_filter_value)
+    GLib.idle_add(self.invalidate_filter_value, priority=GLib.PRIORITY_LOW)
 
   def invalidate_filter_value(self):
-    self.invalidate_sort()
     self.invalidate_filter()
 
-    GLib.idle_add(self.invalidate_selection)
+    GLib.idle_add(self.invalidate_sort, priority=GLib.PRIORITY_HIGH)
+    GLib.idle_add(self.invalidate_selection, priority=GLib.PRIORITY_LOW)
 
   def invalidate_selection(self):
     self.select_row_by_index(0)
-    self.filter_busy = False
 
   def reset_selection_state(self, index):
     if index == 0:
@@ -171,14 +164,18 @@ class CommandList(Gtk.ListBox):
     self.select_row_by_index(self.selected_row + 1)
 
   def sort_function(self, row1, row2):
-    row1_score = row1.position(self.filter_value)
-    row2_score = row2.position(self.filter_value)
+    score_diff = row1.position() - row2.position()
+    index_diff = row1.index - row2.index
 
-    return row1_score - row2_score or row1.index - row2.index
+    return score_diff or index_diff
 
   def filter_function(self, item):
-    visible = item.visibility(self.filter_value)
-    return self.append_visible_row(item, visible)
+    item.set_property('query', self.filter_value)
+
+    visible = item.visibility()
+    self.append_visible_row(item, visible)
+
+    return visible
 
   def do_list_item(self, value, index):
     command = CommandListItem(value=value, index=index)
@@ -259,7 +256,6 @@ class CommandWindow(Gtk.ApplicationWindow):
 
   def on_search_entry_changed(self, *args):
     search_value = self.search_entry.get_text()
-    search_value = normalize_string(search_value.strip())
 
     self.scrolled_window.unset_placement()
     self.command_list.set_filter_value(search_value)
