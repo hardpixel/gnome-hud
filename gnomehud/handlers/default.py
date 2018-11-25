@@ -1,4 +1,5 @@
 import gi
+import time
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -198,11 +199,13 @@ class CommandList(Gtk.ListBox):
 class CommandWindow(Gtk.ApplicationWindow):
 
   def __init__(self, *args, **kwargs):
+    kwargs['type'] = Gtk.WindowType.POPUP
     super(Gtk.ApplicationWindow, self).__init__(*args, **kwargs)
 
-    self.set_modal(True)
+    self.set_keep_above(True)
     self.set_resizable(False)
 
+    self.set_type_hint(Gdk.WindowTypeHint.UTILITY)
     self.set_position(Gtk.WindowPosition.NONE)
     self.set_custom_position()
 
@@ -233,7 +236,10 @@ class CommandWindow(Gtk.ApplicationWindow):
     self.set_dark_variation()
     self.set_custom_styles()
 
+    Gdk.event_handler_set(self.on_gdk_event)
+
     self.connect('show', self.on_window_show)
+    self.connect('button-press-event', self.on_button_press_event)
 
   def set_custom_position(self):
     width = self.get_screen().width()
@@ -251,8 +257,44 @@ class CommandWindow(Gtk.ApplicationWindow):
     inject_custom_style(self, styles)
     add_style_class(self, 'tiled')
 
+  def grab_keyboard(self, window, status, tstamp):
+    while Gdk.keyboard_grab(window, True, tstamp) != status:
+      time.sleep(0.1)
+
+  def grab_pointer(self, window, status, tstamp):
+    mask = Gdk.EventMask.BUTTON_PRESS_MASK
+
+    while Gdk.pointer_grab(window, True, mask, window, None, tstamp) != status:
+      time.sleep(0.1)
+
+  def emulate_focus_out_event(self):
+    tstamp = Gdk.CURRENT_TIME
+    Gdk.keyboard_ungrab(tstamp)
+    Gdk.pointer_ungrab(tstamp)
+
+    fevent = Gdk.Event(Gdk.EventType.FOCUS_CHANGE)
+    self.emit('focus-out-event', fevent)
+
+  def on_gdk_event(self, event):
+    Gtk.main_do_event(event)
+
   def on_window_show(self, window):
+    window = self.get_window()
+    status = Gdk.GrabStatus.SUCCESS
+    tstamp = Gdk.CURRENT_TIME
+
+    self.grab_keyboard(window, status, tstamp)
+    self.grab_pointer(window, status, tstamp)
+
     self.search_entry.grab_focus()
+
+  def on_button_press_event(self, widget, event):
+    window = event.get_window()
+    w_type = window.get_window_type()
+
+    if w_type == Gdk.WindowType.TEMP:
+      self.emulate_focus_out_event()
+      return True
 
   def on_search_entry_changed(self, *args):
     search_value = self.search_entry.get_text()
@@ -291,9 +333,6 @@ class HudMenu(Gtk.Application):
     self.add_simple_action('execute', self.on_execute_command)
 
   def do_activate(self):
-    self.screen = Gdk.Screen.get_default()
-    self.active = self.screen.get_active_window()
-
     self.window = CommandWindow(application=self, title='Gnome HUD')
     self.window.connect('focus-out-event', self.on_hide_window)
     self.window.show_all()
@@ -301,10 +340,6 @@ class HudMenu(Gtk.Application):
     self.commands = self.window.command_list
     self.commands.set_property('menu-actions', self.dbus_menu.actions)
     self.commands.connect_after('button-press-event', self.on_commands_click)
-
-    self.attached = self.window.get_window()
-    self.attached.set_transient_for(self.active)
-    self.attached.focus(Gdk.CURRENT_TIME)
 
   def on_show_window(self, *args):
     self.window.show()
@@ -324,8 +359,5 @@ class HudMenu(Gtk.Application):
       self.on_execute_command()
 
   def on_execute_command(self, *args):
-    self.attached.set_keep_below(True)
-    self.attached.destroy()
-
     self.dbus_menu.activate(self.commands.select_value)
     self.on_hide_window()
