@@ -14,6 +14,8 @@ class DbusMenu:
 
   def __init__(self):
     self.session      = dbus.SessionBus()
+    self.screen       = Gdk.Screen.get_default()
+    self.gdk_window   = self.screen.get_active_window()
     self.matcher      = Bamf.Matcher.get_default()
     self.window       = self.matcher.get_active_window()
     self.xid          = self.window.get_xid()
@@ -79,10 +81,7 @@ class DbusMenu:
     iface.Activate(action.replace(prefix, ''), [], dict())
 
   def close_window(self):
-    screen = Gdk.Screen.get_default()
-    window = screen.get_active_window()
-
-    window.destroy()
+    self.gdk_window.destroy()
 
   def explore_dbusmenu(self):
     name = 'com.canonical.AppMenu.Registrar'
