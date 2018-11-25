@@ -275,6 +275,13 @@ class CommandWindow(Gtk.ApplicationWindow):
     fevent = Gdk.Event(Gdk.EventType.FOCUS_CHANGE)
     self.emit('focus-out-event', fevent)
 
+  def clicked_inside(self, event):
+    size    = self.get_size()
+    x_range = range(0, size.width)
+    y_range = range(0, size.height)
+
+    return int(event.x) in x_range and int(event.y) in y_range
+
   def on_gdk_event(self, event):
     Gtk.main_do_event(event)
 
@@ -289,10 +296,10 @@ class CommandWindow(Gtk.ApplicationWindow):
     self.search_entry.grab_focus()
 
   def on_button_press_event(self, widget, event):
-    window = event.get_window()
-    w_type = window.get_window_type()
+    win_type = event.get_window().get_window_type()
+    tmp_type = Gdk.WindowType.TEMP
 
-    if w_type == Gdk.WindowType.TEMP:
+    if win_type == tmp_type and not self.clicked_inside(event):
       self.emulate_focus_out_event()
       return True
 
