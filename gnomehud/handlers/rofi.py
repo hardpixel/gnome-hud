@@ -37,11 +37,6 @@ class RofiMenu:
 
   @property
 
-  def prompt(self):
-    return self.dbus_menu.prompt.strip()
-
-  @property
-
   def items(self):
     string, *menu_items = self.dbus_menu.actions
 
