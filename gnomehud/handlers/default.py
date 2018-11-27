@@ -202,15 +202,13 @@ class CommandWindow(Gtk.ApplicationWindow):
     kwargs['type'] = Gtk.WindowType.POPUP
     super(Gtk.ApplicationWindow, self).__init__(*args, **kwargs)
 
+    self.set_default_size(700, 250)
     self.set_keep_above(True)
     self.set_resizable(False)
 
     self.set_type_hint(Gdk.WindowTypeHint.UTILITY)
     self.set_position(Gtk.WindowPosition.NONE)
     self.set_custom_position()
-
-    self.set_default_size(800, 309)
-    self.set_size_request(800, 309)
 
     self.set_skip_pager_hint(True)
     self.set_skip_taskbar_hint(True)
@@ -225,6 +223,7 @@ class CommandWindow(Gtk.ApplicationWindow):
 
     self.scrolled_window = Gtk.ScrolledWindow(hadjustment=None, vadjustment=None)
     self.scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+    self.scrolled_window.set_size_request(750, 210)
     self.scrolled_window.add(self.command_list)
 
     self.header_bar = Gtk.HeaderBar(spacing=0)
@@ -243,7 +242,7 @@ class CommandWindow(Gtk.ApplicationWindow):
 
   def set_custom_position(self):
     width = self.get_screen().width()
-    self.move((width - 800) / 2, 10)
+    self.move((width - 750) / 2, 32)
 
   def set_dark_variation(self):
     settings = Gtk.Settings.get_default()
@@ -252,10 +251,18 @@ class CommandWindow(Gtk.ApplicationWindow):
   def set_custom_styles(self):
     styles = """entry.search.flat { border: 0; outline: 0;
       border-image: none; box-shadow: none; }
+
+      headerbar { box-shadow: none; background: @insensitive_bg_color;
+        border-radius: 0; }
+
+      scrolledwindow overshoot, scrolledwindow undershoot { background: none; }
+      scrollbar { opacity: 0; }
+
+      window decoration { box-shadow: none; border-color: @borders;
+        border-style: solid; border-width: 1px; border-radius: 0; }
     """
 
     inject_custom_style(self, styles)
-    add_style_class(self, 'tiled')
 
   def grab_keyboard(self, window, status, tstamp):
     while Gdk.keyboard_grab(window, True, tstamp) != status:
