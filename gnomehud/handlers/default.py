@@ -270,9 +270,11 @@ class CommandWindow(Gtk.ApplicationWindow):
       border-image: none; box-shadow: none; }
 
       headerbar { box-shadow: none; background: @insensitive_bg_color;
-        border-radius: 0; }
+        border-radius: 0; border-width: 0 0 1px 0; }
 
-      scrolledwindow overshoot, scrolledwindow undershoot { background: none; }
+      scrolledwindow overshoot, scrolledwindow undershoot {
+        background: none; box-shadow: none; }
+
       scrollbar { opacity: 0; }
 
       window decoration { box-shadow: none; border-color: @borders;
