@@ -139,6 +139,12 @@ class CommandList(Gtk.ListBox):
     GLib.idle_add(self.invalidate_selection, priority=GLib.PRIORITY_LOW)
 
   def invalidate_selection(self):
+    if bool(self.filter_value):
+      self.visible_rows = []
+      self.foreach(self.append_visible_row)
+    else:
+      self.visible_rows = self.get_children()
+
     self.select_row_by_index(0)
 
   def reset_selection_state(self, index):
@@ -146,8 +152,8 @@ class CommandList(Gtk.ListBox):
       self.invalidate_selection()
       return True
 
-  def append_visible_row(self, row, visibility):
-    if visibility:
+  def append_visible_row(self, row):
+    if row.visibility():
       self.visible_rows.append(row)
       return True
 
@@ -172,14 +178,12 @@ class CommandList(Gtk.ListBox):
 
   def filter_function(self, item):
     item.set_property('query', self.filter_value)
-
-    visible = item.visibility()
-    self.append_visible_row(item, visible)
-
-    return visible
+    return item.visibility()
 
   def do_list_item(self, value, index):
     command = CommandListItem(value=value, index=index)
+
+    self.append_visible_row(command)
     self.add(command)
 
   def do_list_items(self):
@@ -192,7 +196,9 @@ class CommandList(Gtk.ListBox):
     self.select_value = item.value if item else ''
 
   def on_menu_actions_notify(self, *args):
+    self.visible_rows = []
     self.foreach(lambda item: item.destroy())
+
     run_generator(self.do_list_items)
 
 
