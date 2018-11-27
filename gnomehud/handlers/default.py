@@ -164,11 +164,22 @@ class CommandList(Gtk.ListBox):
 
       self.selected_obj.activate()
 
+  def get_last_row_index(self):
+    return len(self.visible_rows) - 1
+
   def select_prev_row(self):
-    self.select_row_by_index(self.selected_row - 1)
+    lastrow = self.get_last_row_index()
+    prevrow = self.selected_row - 1
+    prevrow = lastrow if prevrow < 0 else prevrow
+
+    self.select_row_by_index(prevrow)
 
   def select_next_row(self):
-    self.select_row_by_index(self.selected_row + 1)
+    lastrow = self.get_last_row_index()
+    nextrow = self.selected_row + 1
+    nextrow = 0 if nextrow > lastrow else nextrow
+
+    self.select_row_by_index(nextrow)
 
   def sort_function(self, row1, row2):
     score_diff = row1.position() - row2.position()
