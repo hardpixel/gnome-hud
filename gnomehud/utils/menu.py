@@ -15,7 +15,7 @@ def format_label(parts):
 
 
 def normalize_label(text):
-  text = match_replace('\_|\.\.\.', '', text)
+  text = match_replace('_|\.\.\.|…', '', text)
   text = match_replace('\s+', ' ', text)
 
   return text.strip()
