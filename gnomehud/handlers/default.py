@@ -219,7 +219,7 @@ class CommandWindow(Gtk.ApplicationWindow):
     kwargs['type'] = Gtk.WindowType.POPUP
     super(Gtk.ApplicationWindow, self).__init__(*args, **kwargs)
 
-    self.set_size_request(700, -1)
+    self.set_size_request(750, -1)
     self.set_keep_above(True)
     self.set_resizable(False)
 
@@ -235,6 +235,7 @@ class CommandWindow(Gtk.ApplicationWindow):
     self.empty_label.set_label('No menu actions available!')
 
     self.empty_box = Gtk.Box(sensitive=False)
+    self.empty_box.set_size_request(750, -1)
     self.empty_box.add(self.empty_label)
 
     self.command_list = CommandList()
