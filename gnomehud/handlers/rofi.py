@@ -38,12 +38,8 @@ class RofiMenu:
   @property
 
   def items(self):
-    string, *menu_items = self.dbus_menu.actions
-
-    for menu_item in menu_items:
-      string += '\n' + menu_item
-
-    return string.encode('utf-8')
+    items = self.dbus_menu.actions
+    return '\n'.join(items).encode('utf-8')
 
   @property
 
