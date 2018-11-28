@@ -231,6 +231,12 @@ class CommandWindow(Gtk.ApplicationWindow):
     self.set_skip_taskbar_hint(True)
     self.set_destroy_with_parent(True)
 
+    self.empty_label = Gtk.Label(margin=12)
+    self.empty_label.set_label('No menu actions available!')
+
+    self.empty_box = Gtk.Box(sensitive=False)
+    self.empty_box.add(self.empty_label)
+
     self.command_list = CommandList()
     self.command_list.invalidate_selection()
 
@@ -246,8 +252,12 @@ class CommandWindow(Gtk.ApplicationWindow):
     self.header_bar = Gtk.HeaderBar(spacing=0)
     self.header_bar.set_custom_title(self.search_entry)
 
+    self.main_box = Gtk.Box()
+    self.main_box.add(self.empty_box)
+    self.main_box.add(self.scrolled_window)
+
     self.set_titlebar(self.header_bar)
-    self.add(self.scrolled_window)
+    self.add(self.main_box)
 
     self.set_dark_variation()
     self.set_custom_styles()
@@ -256,6 +266,16 @@ class CommandWindow(Gtk.ApplicationWindow):
 
     self.connect('show', self.on_window_show)
     self.connect('button-press-event', self.on_button_press_event)
+
+  def set_menu_actions(self, actions):
+    if actions:
+      self.empty_box.hide()
+      self.scrolled_window.show()
+
+      self.command_list.set_property('menu-actions', actions)
+    else:
+      self.scrolled_window.hide()
+      self.empty_box.show()
 
   def set_custom_position(self):
     scr_width = self.get_screen().width()
@@ -369,11 +389,12 @@ class HudMenu(Gtk.Application):
 
   def do_activate(self):
     self.window = CommandWindow(application=self, title='Gnome HUD')
-    self.window.connect('focus-out-event', self.on_hide_window)
     self.window.show_all()
 
+    self.window.set_menu_actions(self.dbus_menu.actions)
+    self.window.connect('focus-out-event', self.on_hide_window)
+
     self.commands = self.window.command_list
-    self.commands.set_property('menu-actions', self.dbus_menu.actions)
     self.commands.connect_after('button-press-event', self.on_commands_click)
 
   def on_show_window(self, *args):
