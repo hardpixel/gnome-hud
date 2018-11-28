@@ -182,5 +182,5 @@ class DbusMenu:
 
   def handle_empty(self, actions):
     if not len(actions):
-      alert = 'No menu items available! Showing only "Quit" entry.'
-      print('gnomeHUD: WARNING: (%s) %s' % (self.prompt, alert))
+      alert = 'No menu items available!'
+      print('Gnome HUD: WARNING: (%s) %s' % (self.prompt, alert))
