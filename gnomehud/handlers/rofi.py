@@ -53,7 +53,9 @@ class RofiMenu:
       'header':      self.lookup_color('insensitive_bg_color'),
       'base':        self.lookup_color('theme_base_color'),
       'text':        self.lookup_color('theme_text_color'),
+      'bg':          self.lookup_color('theme_bg_color'),
       'borders':     self.lookup_color('borders'),
+      'disabled':    self.lookup_color('insensitive_fg_color'),
       'selected_bg': self.lookup_color('theme_selected_bg_color'),
       'selected_fg': self.lookup_color('theme_selected_fg_color'),
       'error_bg':    self.lookup_color('error_bg_color'),
@@ -102,17 +104,26 @@ class RofiMenu:
       #window { location: north; anchor: north; border: 1px;
         width: 750px; padding: 0; margin: 32px 0 0; }
 
-      #mainbox { spacing: 0; children: [inputbar, listview]; }
+      #mainbox { spacing: 0; children: [inputbar, %s]; }
+
+      #message { border: 1px 0 0; spacing: 0; padding: 12px;
+        background-color: %s; }
 
       #listview { border: 1px 0 0; spacing: 0; scrollbar: false;
         padding: 0; lines: 6; background-color: @normal-background; }
 
+      #textbox { text-color: %s; }
+      #textbox { text-color: %s; }
       #inputbar { padding: 14px 12px; }
       #element { border: 0; padding: 8px 12px; }
       #textbox-prompt-colon { str: ""; }
     """
 
-    return style
+    layout = 'listview'  if self.dbus_menu.actions else 'message'
+    bcolor = self.gtk_theme_colors['bg']
+    tcolor = self.gtk_theme_colors['disabled']
+
+    return style % (layout, bcolor, tcolor, tcolor)
 
   def lookup_color(self, key):
     return self.context.lookup_color(key)[1]
@@ -124,6 +135,7 @@ class RofiMenu:
       '-dmenu',
       '-theme-str', self.theme_string,
       '-p', '⚙',
+      '-mesg', 'No menu actions available!',
       '-font', self.font_name,
       '-color-window', self.theme_colors['window'],
       '-color-normal', self.theme_colors['normal'],
