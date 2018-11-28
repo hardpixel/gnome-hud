@@ -12,7 +12,7 @@ HUD menu running with the [Rofi](https://github.com/DaveDavenport/rofi) menu han
 
 ## Dependencies
 ```
-gtk3 bamf python python-gobject python-dbus
+gtk3 bamf linkeybinder3 python python-gobject python-dbus
 ```
 
 ## Installation
