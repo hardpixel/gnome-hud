@@ -36,9 +36,9 @@ def inject_custom_style(widget, style_string):
   Gtk.StyleContext.add_provider_for_screen(screen, provider, priority)
 
 
-def add_style_class(widget, class_string):
+def add_style_class(widget, class_names):
   context = widget.get_style_context()
-  context.add_class('tiled')
+  context.add_class(class_names)
 
 
 class CommandListItem(Gtk.ListBoxRow):
@@ -219,7 +219,7 @@ class CommandWindow(Gtk.ApplicationWindow):
     kwargs['type'] = Gtk.WindowType.POPUP
     super(Gtk.ApplicationWindow, self).__init__(*args, **kwargs)
 
-    self.set_default_size(700, 250)
+    self.set_size_request(700, -1)
     self.set_keep_above(True)
     self.set_resizable(False)
 
@@ -258,8 +258,10 @@ class CommandWindow(Gtk.ApplicationWindow):
     self.connect('button-press-event', self.on_button_press_event)
 
   def set_custom_position(self):
-    width = self.get_screen().width()
-    self.move((width - 750) / 2, 32)
+    scr_width = self.get_screen().width()
+    win_width = self.get_size().width
+
+    self.move((scr_width - win_width) / 2, 32)
 
   def set_dark_variation(self):
     settings = Gtk.Settings.get_default()
