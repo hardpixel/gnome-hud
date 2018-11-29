@@ -224,7 +224,7 @@ class CommandWindow(Gtk.ApplicationWindow):
     self.set_resizable(False)
 
     self.set_type_hint(Gdk.WindowTypeHint.UTILITY)
-    self.set_position(Gtk.WindowPosition.NONE)
+    self.set_position(Gtk.WindowPosition.CENTER)
     self.set_custom_position()
 
     self.set_skip_pager_hint(True)
@@ -279,10 +279,8 @@ class CommandWindow(Gtk.ApplicationWindow):
       self.empty_box.show()
 
   def set_custom_position(self):
-    scr_width = self.get_screen().width()
-    win_width = self.get_size().width
-
-    self.move((scr_width - win_width) / 2, 32)
+    position = self.get_position()
+    self.move(position.root_x, 32)
 
   def set_dark_variation(self):
     settings = Gtk.Settings.get_default()
