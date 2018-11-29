@@ -22,7 +22,8 @@ class AppMenuService(dbus.service.Object):
   @dbus.service.method(BUS_NAME, in_signature='u')
 
   def UnregisterWindow(self, windowId):
-    del self.window_dict[windowId]
+    if windowId in self.window_dict:
+      del self.window_dict[windowId]
 
   @dbus.service.method(BUS_NAME, in_signature='u', out_signature='so')
 
