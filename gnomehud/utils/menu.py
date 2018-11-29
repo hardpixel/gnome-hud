@@ -92,7 +92,7 @@ class DbusAppMenuItem(object):
   def __init__(self, item, path=[]):
     self.path   = path
     self.action = int(item[0])
-    self.accel  = None
+    self.accel  = item[1].get('shortcut', '')
     self.label  = normalize_label(item[1].get('label', ''))
     self.text   = format_label(self.path + [self.label])
 
@@ -133,7 +133,7 @@ class DbusAppMenu(object):
     menu_item = DbusAppMenuItem(item, labels)
     menu_path = labels
 
-    if menu_item.label != 'Root':
+    if bool(menu_item.label) and menu_item.label != 'Root':
       menu_path = labels + [menu_item.label]
 
     if len(item[2]):
