@@ -7,8 +7,8 @@ from gnomehud.utils.fuzzy import match_replace
 
 
 def active_window():
-  disp = os.environ['WAYLAND_DISPLAY']
-  type = os.environ['XDG_SESSION_TYPE']
+  disp = os.environ.get('WAYLAND_DISPLAY')
+  type = os.environ.get('XDG_SESSION_TYPE')
 
   if 'wayland' in (disp or type):
     return ShellWindow()
