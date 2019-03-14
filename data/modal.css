@@ -1,0 +1,32 @@
+entry {
+  border: 0;
+  outline: 0;
+  border-image: none;
+  box-shadow: none;
+}
+
+headerbar {
+  box-shadow: none;
+  background: @insensitive_bg_color;
+  border-color: @borders;
+  border-radius: 0;
+  border-width: 0 0 1px 0;
+}
+
+scrolledwindow overshoot,
+scrolledwindow undershoot {
+  background: none;
+  box-shadow: none;
+}
+
+scrollbar {
+  opacity: 0;
+}
+
+window decoration {
+  box-shadow: none;
+  border-color: @borders;
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 0;
+}
