@@ -58,10 +58,8 @@ class ShellWindow(object):
     return result if result != 'null' else None
 
   def get_xid(self):
-    result = self.matcher.get_focus_window_prop('get_description')
-    result = match_findall('0x[0-9a-f]+', normalize_string(result))
-
-    return int(result[0], 16) if result else None
+    result = self.matcher.get_focus_window_prop('get_id')
+    return int(result) if result else None
 
   def get_appname(self):
     result = self.matcher.get_focus_app_prop('get_name')
