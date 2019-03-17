@@ -1,16 +1,13 @@
-import os
 import dbus
 
 from gnomehud.utils.shell import ShellWindow
 from gnomehud.utils.bamf import BamfWindow
+from gnomehud.utils.shell import is_wayland
 from gnomehud.utils.fuzzy import match_replace
 
 
 def active_window():
-  disp = os.environ.get('WAYLAND_DISPLAY')
-  type = os.environ.get('XDG_SESSION_TYPE')
-
-  if 'wayland' in (disp or type):
+  if is_wayland():
     return ShellWindow()
   else:
     return BamfWindow()
