@@ -1,12 +1,16 @@
-import gi
 import dbus
 
-gi.require_version('Bamf', '3')
-
-from gi.repository import Gio
-from gi.repository import Bamf
-
+from gnomehud.utils.shell import ShellWindow
+from gnomehud.utils.bamf import BamfWindow
+from gnomehud.utils.shell import is_wayland
 from gnomehud.utils.fuzzy import match_replace
+
+
+def active_window():
+  if is_wayland():
+    return ShellWindow()
+  else:
+    return BamfWindow()
 
 
 def format_label(parts):
@@ -148,19 +152,14 @@ class DbusMenu:
 
   def __init__(self):
     self.session = dbus.SessionBus()
-    self.matcher = Bamf.Matcher.get_default()
-    self.window  = self.matcher.get_active_window()
-    self.appmenu = DbusAppMenu(self.session, self.window)
+    self.window  = active_window()
     self.gtkmenu = DbusGtkMenu(self.session, self.window)
+    self.appmenu = DbusAppMenu(self.session, self.window)
 
   @property
 
   def prompt(self):
-    app  = self.matcher.get_active_application()
-    file = app.get_desktop_file()
-    info = Gio.DesktopAppInfo.new_from_filename(file)
-
-    return info.get_string('Name')
+    return self.window.get_appname()
 
   @property
 
