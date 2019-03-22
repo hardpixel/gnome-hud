@@ -26,13 +26,6 @@ def normalize_label(text):
   return text.strip()
 
 
-def normalize_path(path, app_name):
-  if app_name.lower() in path[0].lower():
-    path = path[1:-1]
-
-  return path
-
-
 class DbusGtkMenuItem(object):
 
   def __init__(self, item, path=[]):
@@ -184,8 +177,8 @@ class DbusAppMenu(object):
 
 class DbusPlotinusMenuItem(object):
 
-  def __init__(self, item, app_name):
-    self.path   = normalize_path(item['Path'], app_name)
+  def __init__(self, item):
+    self.path   = list(item['Path'])[1:]
     self.action = int(item['Id'])
     self.accel  = list(item['Accelerators'])
     self.label  = normalize_label(item['Label'])
@@ -198,7 +191,6 @@ class DbusPlotinusMenu(object):
     self.actions   = {}
     self.session   = session
     self.win_path  = window.get_utf8_prop('_GTK_WINDOW_OBJECT_PATH')
-    self.app_name  = window.get_appname()
     self.interface = self.get_interface()
 
   def activate(self, selection):
@@ -230,7 +222,7 @@ class DbusPlotinusMenu(object):
     interface  = dbus.Interface(command, dbus_interface='org.freedesktop.DBus.Properties')
     command    = dbus.Interface(command, dbus_interface='com.worldwidemann.plotinus.Command')
     properties = interface.GetAll('com.worldwidemann.plotinus.Command')
-    menu_item  = DbusPlotinusMenuItem(properties, self.app_name)
+    menu_item  = DbusPlotinusMenuItem(properties)
 
     self.actions[menu_item.text] = command
 
