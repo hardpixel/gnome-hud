@@ -9,6 +9,7 @@ from gi.repository import Gdk
 from gi.repository import Gio
 from gi.repository import GLib
 from gi.repository import GObject
+from gi.repository import Pango
 
 from gnomehud.utils.menu import DbusMenu
 from gnomehud.utils.fuzzy import FuzzyMatch
@@ -61,6 +62,7 @@ class CommandListItem(Gtk.ListBoxRow):
     self.label = Gtk.Label(margin=6, margin_left=10, margin_right=10)
     self.label.set_justify(Gtk.Justification.LEFT)
     self.label.set_halign(Gtk.Align.START)
+    self.label.set_ellipsize(Pango.EllipsizeMode.END)
 
     self.connect('notify::query', self.on_query_notify)
 
