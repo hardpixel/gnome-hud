@@ -26,6 +26,13 @@ def normalize_label(text):
   return text.strip()
 
 
+def normalize_path(path, app_name):
+  if app_name.lower() in path[0].lower():
+    path = path[1:-1]
+
+  return path
+
+
 class DbusGtkMenuItem(object):
 
   def __init__(self, item, path=[]):
@@ -175,13 +182,67 @@ class DbusAppMenu(object):
       self.actions[menu_item.text] = menu_item.action
 
 
+class DbusPlotinusMenuItem(object):
+
+  def __init__(self, item, app_name):
+    self.path   = normalize_path(item['Path'], app_name)
+    self.action = int(item['Id'])
+    self.accel  = list(item['Accelerators'])
+    self.label  = normalize_label(item['Label'])
+    self.text   = format_label(self.path + [self.label])
+
+
+class DbusPlotinusMenu(object):
+
+  def __init__(self, session, window):
+    self.actions   = {}
+    self.session   = session
+    self.win_path  = window.get_utf8_prop('_GTK_WINDOW_OBJECT_PATH')
+    self.app_name  = window.get_appname()
+    self.interface = self.get_interface()
+
+  def activate(self, selection):
+    self.actions[selection].Execute()
+
+  def get_interface(self):
+    bus_name = 'com.worldwidemann.plotinus'
+    bus_path = '/com/worldwidemann/plotinus'
+
+    try:
+      object    = self.session.get_object(bus_name, bus_path)
+      interface = dbus.Interface(object, dbus_interface=bus_name)
+
+      return interface
+    except dbus.exceptions.DBusException:
+      return None
+
+  def get_results(self):
+    self.actions = {}
+
+    if self.interface and self.win_path:
+      name, paths = self.interface.GetCommands(self.win_path)
+      commands    = [self.session.get_object(name, path) for path in paths]
+
+      for command in commands:
+        self.collect_entries(command)
+
+  def collect_entries(self, command):
+    interface  = dbus.Interface(command, dbus_interface='org.freedesktop.DBus.Properties')
+    command    = dbus.Interface(command, dbus_interface='com.worldwidemann.plotinus.Command')
+    properties = interface.GetAll('com.worldwidemann.plotinus.Command')
+    menu_item  = DbusPlotinusMenuItem(properties, self.app_name)
+
+    self.actions[menu_item.text] = command
+
+
 class DbusMenu:
 
   def __init__(self):
-    self.session = dbus.SessionBus()
-    self.window  = active_window()
-    self.gtkmenu = DbusGtkMenu(self.session, self.window)
-    self.appmenu = DbusAppMenu(self.session, self.window)
+    self.session  = dbus.SessionBus()
+    self.window   = active_window()
+    self.gtkmenu  = DbusGtkMenu(self.session, self.window)
+    self.appmenu  = DbusAppMenu(self.session, self.window)
+    self.plotinus = DbusPlotinusMenu(self.session, self.window)
 
   @property
 
@@ -191,10 +252,17 @@ class DbusMenu:
   @property
 
   def actions(self):
-    self.appmenu.get_results()
     self.gtkmenu.get_results()
+    actions = self.gtkmenu.actions
 
-    actions = { **self.gtkmenu.actions, **self.appmenu.actions }
+    if not bool(actions):
+      self.appmenu.get_results()
+      actions = self.appmenu.actions
+
+    if not bool(actions):
+      self.plotinus.get_results()
+      actions = self.plotinus.actions
+
     self.handle_empty(actions)
 
     return actions.keys()
@@ -205,6 +273,9 @@ class DbusMenu:
 
     elif selection in self.appmenu.actions:
       self.appmenu.activate(selection)
+
+    elif selection in self.plotinus.actions:
+      self.plotinus.activate(selection)
 
   def handle_empty(self, actions):
     if not len(actions):
