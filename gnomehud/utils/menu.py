@@ -139,10 +139,13 @@ class DbusAppMenu(object):
 
   def get_results(self):
     if self.interface:
-      results = self.interface.GetLayout(0, -1, ['label', 'children-display'])
+      results = self.interface.GetLayout(0, -1, ['children-display'])
+      self.expand_menus(results[1])
+
+      results = self.interface.GetLayout(0, -1, ['label'])
       self.collect_entries(results[1], [])
 
-  def expand_menu(self, item):
+  def expand_menus(self, item=None):
     item_id    = item[0]
     item_props = item[1]
 
@@ -150,9 +153,11 @@ class DbusAppMenu(object):
       self.interface.AboutToShow(item_id)
       self.interface.Event(item_id, 'opened', 'not used', dbus.UInt32(time.time()))
 
-  def collect_entries(self, item=None, labels=[]):
-    self.expand_menu(item)
+    if len(item[2]):
+      for child in item[2]:
+        self.expand_menus(child)
 
+  def collect_entries(self, item=None, labels=[]):
     menu_item = DbusAppMenuItem(item, labels)
     menu_path = labels
 
