@@ -1,3 +1,4 @@
+import time
 import dbus
 
 from gnomehud.utils.shell import ShellWindow
@@ -130,10 +131,20 @@ class DbusAppMenu(object):
 
   def get_results(self):
     if self.interface:
-      results = self.interface.GetLayout(0, -1, ['label'])
+      results = self.interface.GetLayout(0, -1, ['label', 'children-display'])
       self.collect_entries(results[1], [])
 
+  def expand_menu(self, item):
+    item_id    = item[0]
+    item_props = item[1]
+
+    if 'children-display' in item_props:
+      self.interface.AboutToShow(item_id)
+      self.interface.Event(item_id, 'opened', 'not used', dbus.UInt32(time.time()))
+
   def collect_entries(self, item=None, labels=[]):
+    self.expand_menu(item)
+
     menu_item = DbusAppMenuItem(item, labels)
     menu_path = labels
 
