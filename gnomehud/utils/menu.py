@@ -65,9 +65,10 @@ class DbusGtkMenu(object):
     interface.Activate(name.replace(prefix, ''), [], dict())
 
   def get_results(self):
-    paths = [self.appmenu_path, self.menubar_path]
+    self.results = {}
+    self.actions = {}
 
-    for path in filter(None, paths):
+    for path in filter(None, [self.appmenu_path, self.menubar_path]):
       object    = self.session.get_object(self.bus_name, path)
       interface = dbus.Interface(object, dbus_interface='org.gtk.Menus')
       results   = interface.Start([x for x in range(1024)])
@@ -138,6 +139,8 @@ class DbusAppMenu(object):
       return None
 
   def get_results(self):
+    self.actions = {}
+
     if self.interface:
       results = self.interface.GetLayout(0, -1, ['children-display'])
       self.expand_menus(results[1])
