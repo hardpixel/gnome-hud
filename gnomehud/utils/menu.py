@@ -112,7 +112,15 @@ class DbusAppMenu(object):
 
   def activate(self, selection):
     action = self.actions[selection]
+
     self.interface.Event(action, 'clicked', 0, 0)
+    self.close_level1_items()
+
+  def close_level1_items(self):
+    items = self.interface.GetLayout(0, 1, ['label'])[1]
+
+    for item in items[2]:
+      self.interface.Event(item[0], 'closed', 'not used', dbus.UInt32(time.time()))
 
   def get_interface(self):
     bus_name = 'com.canonical.AppMenu.Registrar'
