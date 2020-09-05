@@ -255,7 +255,9 @@ class DbusMenu:
       self.gtkmenu.get_results()
       actions = self.gtkmenu.actions
 
-    self.handle_empty(actions)
+    if not bool(actions):
+      alert = 'No menu items available!'
+      print('Gnome HUD: WARNING: (%s) %s' % (self.prompt, alert))
 
     return actions.keys()
 
@@ -268,8 +270,3 @@ class DbusMenu:
 
     elif selection in self.plotinus.actions:
       self.plotinus.activate(selection)
-
-  def handle_empty(self, actions):
-    if not len(actions):
-      alert = 'No menu items available!'
-      print('Gnome HUD: WARNING: (%s) %s' % (self.prompt, alert))
