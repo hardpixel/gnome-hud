@@ -320,7 +320,7 @@ class CommandWindow(Gtk.ApplicationWindow):
       time.sleep(0.1)
 
   def emulate_focus_out_event(self):
-    if (not self.wayland):
+    if not self.wayland:
       tstamp = Gdk.CURRENT_TIME
       Gdk.keyboard_ungrab(tstamp)
       Gdk.pointer_ungrab(tstamp)
@@ -339,7 +339,7 @@ class CommandWindow(Gtk.ApplicationWindow):
     Gtk.main_do_event(event)
 
   def on_window_show(self, window):
-    if (not self.wayland):
+    if not self.wayland:
       window = self.get_window()
       status = Gdk.GrabStatus.SUCCESS
       tstamp = Gdk.CURRENT_TIME
