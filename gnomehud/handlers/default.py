@@ -221,7 +221,9 @@ class CommandWindow(Gtk.ApplicationWindow):
   wayland = is_wayland()
 
   def __init__(self, *args, **kwargs):
-    kwargs['type'] = Gtk.WindowType.POPUP
+    if not self.wayland:
+      kwargs['type'] = Gtk.WindowType.POPUP
+
     super(Gtk.ApplicationWindow, self).__init__(*args, **kwargs)
 
     self.set_size_request(750, -1)
