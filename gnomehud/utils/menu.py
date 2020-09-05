@@ -244,16 +244,16 @@ class DbusMenu:
   @property
 
   def actions(self):
-    self.gtkmenu.get_results()
-    actions = self.gtkmenu.actions
-
-    if not bool(actions):
-      self.appmenu.get_results()
-      actions = self.appmenu.actions
+    self.appmenu.get_results()
+    actions = self.appmenu.actions
 
     if not bool(actions):
       self.plotinus.get_results()
       actions = self.plotinus.actions
+
+    if not bool(actions):
+      self.gtkmenu.get_results()
+      actions = self.gtkmenu.actions
 
     self.handle_empty(actions)
 
