@@ -153,8 +153,12 @@ class DbusAppMenu(object):
     item_props = item[1]
 
     if 'children-display' in item_props:
-      self.interface.AboutToShow(item_id)
-      self.interface.Event(item_id, 'opened', 'not used', dbus.UInt32(time.time()))
+      try:
+        self.interface.AboutToShow(item_id)
+        self.interface.Event(item_id, 'opened', 'not used', dbus.UInt32(time.time()))
+      except dbus.exceptions.DBusException:
+        alert = 'Failed to expand submenu children!'
+        print('Gnome HUD: WARNING: (AppMenu) %s' % alert)
 
     if len(item[2]):
       for child in item[2]:
