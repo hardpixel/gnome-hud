@@ -42,14 +42,14 @@ class DbusShell(object):
 
   def eval_object_function(self, object, prop):
     result = self.eval_script('%s.%s()' % (object, prop))
-    return result[1] if bool(result[0]) else None
+    return result[1] if bool(result[0]) and result[1] != 'null' else None
 
   def get_focus_window_prop(self, prop):
     window = 'global.display.focus_window'
     return self.eval_object_function(window, prop)
 
   def get_focus_app_prop(self, prop):
-    app = 'Shell.WindowTracker.get_default().focus_app'
+    app = 'imports.gi.Shell.WindowTracker.get_default().focus_app'
     return self.eval_object_function(app, prop)
 
 
